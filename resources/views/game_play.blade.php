@@ -6,6 +6,11 @@
     </x-slot>
     <link rel="stylesheet" href="{{ asset('game/TemplateData/style.css') }}">
     <link rel="manifest" href="{{ asset('game/manifest.webmanifest') }}">
+    <link rel="manifest" href="{{ asset('game/manifest.webmanifest') }}">
+    <link rel="apple-touch-icon" href="{{ asset('game/icon-192.png') }}">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#000000">
 
     <!-- Laravel to Unity Player Bridge -->
     <script>
@@ -50,7 +55,12 @@
             <div id="unity-warning"></div>
         </div>
     </div>
-
+<script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/game/ServiceWorker.js')
+    .then(() => console.log("Service Worker Registered"));
+}
+</script>
     <!-- Unity Exit Button Bridge -->
     <script>
         function ExitToLauncher() {
