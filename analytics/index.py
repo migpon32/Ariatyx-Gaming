@@ -1,33 +1,13 @@
-from flask import Flask, render_template_string, jsonify, redirect
+from flask import Flask, render_template_string, jsonify, redirect, url_for
 import requests
 import csv
 import pandas as pd
 import os
 
-
-import os
-from flask import Flask
-
 app = Flask(__name__)
 
-@app.route("/")
-def home():
-    return "Python Analytics Working!"
-
-@app.route("/analytics")
-def analytics():
-    return "Analytics Route Working!"
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
-    app.run(host="0.0.0.0", port=port)
-
-
-    
-# In analytics/index.py
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CSV_FILE = os.path.join(BASE_DIR, "leaderboard_analytics.csv")
-app = Flask(__name__)
 
 SERVER_API_KEY = "dev_9bfb5807a5f64ea78d225fdfe6de70a2"
 LEADERBOARD_KEY = "main_leaderboard"
@@ -35,8 +15,8 @@ LEADERBOARD_KEY = "main_leaderboard"
 BASE_URL = "https://api.lootlocker.io"
 LL_VERSION = "2021-03-01"
 
-
 def fetch_leaderboard():
+    """Fetch leaderboard data from LootLocker API and save to CSV"""
     auth_url = f"{BASE_URL}/server/session"
 
     auth_headers = {
@@ -50,6 +30,7 @@ def fetch_leaderboard():
     }
 
     try:
+        # Authenticate
         auth_res = requests.post(
             auth_url,
             json=auth_payload,
@@ -58,15 +39,14 @@ def fetch_leaderboard():
         )
 
         if auth_res.status_code != 200:
-            return None, auth_res.text
+            return None, f"Authentication failed: {auth_res.text}"
 
         token = auth_res.json().get("token")
-
         if not token:
             return None, "No token received from LootLocker."
 
+        # Fetch leaderboard
         leaderboard_url = f"{BASE_URL}/server/leaderboards/{LEADERBOARD_KEY}/list?count=100&after=0"
-
         leaderboard_headers = {
             "LL-Version": LL_VERSION,
             "x-auth-token": token
@@ -79,27 +59,23 @@ def fetch_leaderboard():
         )
 
         if data_res.status_code != 200:
-            return None, data_res.text
+            return None, f"Leaderboard fetch failed: {data_res.text}"
 
         items = data_res.json().get("items", [])
+        
+        if not items:
+            return None, "Leaderboard is empty"
 
+        # Write to CSV
         with open(CSV_FILE, mode="w", newline="", encoding="utf-8") as file:
             writer = csv.writer(file)
-
             writer.writerow([
-                "Rank",
-                "Player Name",
-                "Score",
-                "Member ID",
-                "Player ID",
-                "Public UID",
-                "ULID",
-                "Metadata"
+                "Rank", "Player Name", "Score", "Member ID", 
+                "Player ID", "Public UID", "ULID", "Metadata"
             ])
 
             for item in items:
                 player = item.get("player", {})
-
                 writer.writerow([
                     item.get("rank"),
                     player.get("name") or "Unknown Player",
@@ -115,40 +91,56 @@ def fetch_leaderboard():
 
     except requests.exceptions.ConnectionError:
         return None, "Cannot connect to LootLocker. Check your internet, DNS, or firewall."
-
     except requests.exceptions.Timeout:
         return None, "LootLocker request timed out."
-
     except requests.exceptions.RequestException as e:
         return None, str(e)
 
-
 @app.route("/")
 def dashboard():
+    """Main dashboard route - fetches fresh data and displays analytics"""
+    # Fetch fresh data
     items, error = fetch_leaderboard()
-
+    
     if error:
-        return f"""
-        <h1>LootLocker Connection Error</h1>
-        <p>{error}</p>
-        <p>Check your internet, DNS, API key, and leaderboard key.</p>
-        """
+        # Try to load existing CSV if fetch failed
+        if os.path.exists(CSV_FILE):
+            df = pd.read_csv(CSV_FILE)
+            if not df.empty:
+                error = None  # Use cached data
+            else:
+                return f"""
+                <h1>LootLocker Connection Error</h1>
+                <p>{error}</p>
+                <p>No cached data available.</p>
+                <button onclick="location.reload()">Try Again</button>
+                """
+        else:
+            return f"""
+            <h1>LootLocker Connection Error</h1>
+            <p>{error}</p>
+            <p>Check your internet, DNS, API key, and leaderboard key.</p>
+            <button onclick="location.reload()">Retry</button>
+            """
 
+    # Load data for display
     if not os.path.exists(CSV_FILE):
-        return "<h1>No leaderboard data found.</h1>"
+        return "<h1>No leaderboard data found. Please try again.</h1>"
 
     df = pd.read_csv(CSV_FILE)
-
     if df.empty:
         return "<h1>Leaderboard is empty.</h1>"
+    
     df = df.sort_values("Rank")
-
     players = df.to_dict(orient="records")
-
-    # Calculate additional stats
+    
+    # Calculate statistics
     top_10_avg = df.head(10)["Score"].mean() if len(df) >= 10 else df["Score"].mean()
     median_score = df["Score"].median()
 
+    # Get launcher URL from environment or use relative path
+    launcher_url = os.environ.get("LAUNCHER_URL", "/launcher")  # Use relative path
+    
     html = """
     <!DOCTYPE html>
     <html lang="en">
@@ -160,6 +152,7 @@ def dashboard():
         <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&family=Oswald:wght@700&display=swap" rel="stylesheet">
         
         <style>
+            /* Your existing CSS styles remain the same */
             * {
                 margin: 0;
                 padding: 0;
@@ -174,7 +167,6 @@ def dashboard():
                 overflow-x: auto;
             }
 
-            /* Scanlines effect */
             body::before {
                 content: '';
                 position: fixed;
@@ -187,7 +179,6 @@ def dashboard():
                 z-index: 100;
             }
 
-            /* Animated background gradient */
             .bg-gradient {
                 position: fixed;
                 inset: 0;
@@ -213,7 +204,6 @@ def dashboard():
                 z-index: 1;
             }
 
-            /* Header with return button */
             .header {
                 display: flex;
                 justify-content: space-between;
@@ -243,7 +233,6 @@ def dashboard():
                 letter-spacing: 1px;
             }
 
-            /* Return Button - Same style as launcher */
             .return-btn {
                 display: inline-flex;
                 align-items: center;
@@ -271,7 +260,6 @@ def dashboard():
                 box-shadow: 0 0 20px rgba(255,215,0,0.3);
             }
 
-            /* Stats Cards - Glowing effect */
             .cards {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -330,7 +318,6 @@ def dashboard():
                 letter-spacing: 1px;
             }
 
-            /* Chart Container */
             .chart-container {
                 background: rgba(10,10,15,0.7);
                 backdrop-filter: blur(10px);
@@ -359,7 +346,6 @@ def dashboard():
                 max-height: 400px;
             }
 
-            /* Table Container - Cyberpunk style */
             .table-container {
                 background: rgba(10,10,15,0.7);
                 backdrop-filter: blur(10px);
@@ -456,7 +442,6 @@ def dashboard():
                 transform: scale(1.02);
             }
 
-            /* Scrollbar styling */
             ::-webkit-scrollbar {
                 width: 8px;
                 height: 8px;
@@ -471,7 +456,6 @@ def dashboard():
                 border-radius: 4px;
             }
 
-            /* Responsive */
             @media (max-width: 768px) {
                 .container {
                     padding: 20px 16px;
@@ -507,7 +491,7 @@ def dashboard():
                 </div>
                 <div style="display: flex; gap: 12px; align-items: center;">
                     <button class="refresh-btn" onclick="location.reload()">⟳ REFRESH</button>
-                    <a href="http://127.0.0.1:8000/launcher" class="return-btn">
+                    <a href="{{ launcher_url }}" class="return-btn">
                         <span>←</span>
                         <span>RETURN TO LAUNCHER</span>
                     </a>
@@ -655,9 +639,10 @@ def dashboard():
         total_players=len(df),
         highest_score=df["Score"].max(),
         top_player=df.iloc[0]["Player Name"],
-        top_10_avg=top_10_avg
+        top_10_avg=top_10_avg,
+        launcher_url=launcher_url  # Pass launcher URL to template
     )
 
-
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port, debug=True)
