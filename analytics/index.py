@@ -4,6 +4,26 @@ import csv
 import pandas as pd
 import os
 
+
+import os
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "Python Analytics Working!"
+
+@app.route("/analytics")
+def analytics():
+    return "Analytics Route Working!"
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
+
+
+    
 # In analytics/index.py
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CSV_FILE = os.path.join(BASE_DIR, "leaderboard_analytics.csv")
