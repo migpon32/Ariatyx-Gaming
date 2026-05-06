@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+
+    <link rel="manifest" href="{{ asset('game/manifest.webmanifest') }}">
+<meta name="theme-color" content="#000000">
+<link rel="apple-touch-icon" href="{{ asset('game/icon-192.png') }}">
     <!-- TITLE -->
     <title>{{ $title ?? 'Ariatyx Gaming' }}</title>
 

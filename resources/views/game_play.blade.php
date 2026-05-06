@@ -7,9 +7,7 @@
 
     {{-- PWA / Unity CSS --}}
     <link rel="stylesheet" href="{{ asset('game/TemplateData/style.css') }}">
-    <link rel="manifest" href="{{ asset('game/manifest.webmanifest') }}">
-    <meta name="theme-color" content="#000000">
-
+   
     {{-- iPhone / iPad support --}}
     <link rel="apple-touch-icon" href="{{ asset('game/icon-192.png') }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
