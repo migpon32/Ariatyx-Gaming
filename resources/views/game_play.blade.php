@@ -4,15 +4,18 @@
     <x-slot name="favicon">
         {{ asset('images/War_Bird.png') }}
     </x-slot>
+
+    {{-- PWA / Unity CSS --}}
     <link rel="stylesheet" href="{{ asset('game/TemplateData/style.css') }}">
     <link rel="manifest" href="{{ asset('game/manifest.webmanifest') }}">
-    <link rel="manifest" href="{{ asset('game/manifest.webmanifest') }}">
-    <link rel="apple-touch-icon" href="{{ asset('game/icon-192.png') }}">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#000000">
 
-    <!-- Laravel to Unity Player Bridge -->
+    {{-- iPhone / iPad support --}}
+    <link rel="apple-touch-icon" href="{{ asset('game/icon-192.png') }}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+    {{-- Laravel to Unity Player Bridge --}}
     <script>
         window.LaravelPlayer = {
             id: @json(auth()->id()),
@@ -37,8 +40,6 @@
         }
 
         console.log("LaravelPlayer:", window.LaravelPlayer);
-        console.log("Unity Player ID:", localStorage.getItem("player_id"));
-        console.log("Unity Player Name:", localStorage.getItem("player_name"));
     </script>
 
     <div class="py-12 bg-black min-h-screen flex flex-col items-center justify-center">
@@ -55,20 +56,30 @@
             <div id="unity-warning"></div>
         </div>
     </div>
-<script>
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/game/ServiceWorker.js')
-    .then(() => console.log("Service Worker Registered"));
-}
-</script>
-    <!-- Unity Exit Button Bridge -->
+
+    {{-- Service Worker for PWA --}}
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", function () {
+                navigator.serviceWorker.register("/game/ServiceWorker.js")
+                    .then(function (registration) {
+                        console.log("Service Worker Registered:", registration.scope);
+                    })
+                    .catch(function (error) {
+                        console.error("Service Worker Error:", error);
+                    });
+            });
+        }
+    </script>
+
+    {{-- Unity Exit Button Bridge --}}
     <script>
         function ExitToLauncher() {
             window.location.href = "{{ route('launcher') }}";
         }
     </script>
 
-    <!-- Firebase Scripts -->
+    {{-- Firebase Scripts --}}
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 
@@ -78,7 +89,7 @@ if ('serviceWorker' in navigator) {
 
     <script src="{{ asset('game/firebase-notification.js') }}"></script>
 
-    <!-- Unity WebGL Loader -->
+    {{-- Unity WebGL Loader --}}
     <script>
         var container = document.querySelector("#unity-container");
         var canvas = document.querySelector("#unity-canvas");
