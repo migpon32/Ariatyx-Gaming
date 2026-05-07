@@ -313,7 +313,7 @@
             This replacement maintains the exact same visual language, hover effects,
             and design consistency while being fully functional.
         -->
-        <a href="http://127.0.0.1:5000" 
+        <a href="https://zesty-nature-production-e1e4.up.railway.app" 
            target="_blank" 
            class="btn-leaderboard"
            id="leaderboardBtn">
