@@ -56,20 +56,32 @@
     </div>
 
     {{-- Service Worker for PWA --}}
-    <script>
-        if ("serviceWorker" in navigator) {
-            window.addEventListener("load", function () {
-                navigator.serviceWorker.register("/game/ServiceWorker.js")
-                    .then(function (registration) {
-                        console.log("Service Worker Registered:", registration.scope);
-                    })
-                    .catch(function (error) {
-                        console.error("Service Worker Error:", error);
-                    });
-            });
-        }
-    </script>
+   {{-- Firebase + PWA Service Worker --}}
+<script>
+    if ("serviceWorker" in navigator) {
+        window.addEventListener("load", async function () {
 
+            // PWA Service Worker
+            navigator.serviceWorker.register("/game/ServiceWorker.js")
+                .then(function (registration) {
+                    console.log("PWA Service Worker Registered:", registration.scope);
+                })
+                .catch(function (error) {
+                    console.error("PWA Service Worker Error:", error);
+                });
+
+            // Firebase Messaging Service Worker
+            navigator.serviceWorker.register("/firebase-messaging-sw.js")
+                .then(function (registration) {
+                    console.log("Firebase SW Registered:", registration.scope);
+                })
+                .catch(function (error) {
+                    console.error("Firebase SW Error:", error);
+                });
+
+        });
+    }
+</script>
     {{-- Unity Exit Button Bridge --}}
     <script>
         function ExitToLauncher() {
