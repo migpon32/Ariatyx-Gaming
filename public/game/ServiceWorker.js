@@ -1,35 +1,72 @@
-const cacheName = "DefaultCompany-BulletDrop-1.0";
+const cacheName = "BulletDrop-PWA-v2";
+
 const contentToCache = [
-    "Build/BulletDrop.loader.js",
-    "Build/BulletDrop.framework.js",
-    "Build/BulletDrop.data",
-    "Build/BulletDrop.wasm",
-    "TemplateData/style.css"
+    "./",
+    "./Build/BulletDrop.loader.js",
+    "./Build/BulletDrop.framework.js",
+    "./Build/BulletDrop.data",
+    "./Build/BulletDrop.wasm",
+    "./TemplateData/style.css",
+    "./manifest.webmanifest",
+    "./icon-192.png",
+    "./icon-512.png"
 ];
 
-self.addEventListener("install", function (e) {
-    console.log("[Service Worker] Install");
+self.addEventListener("install", function (event) {
+    console.log("[Service Worker] Installing...");
 
-    e.waitUntil((async function () {
-        const cache = await caches.open(cacheName);
-        console.log("[Service Worker] Caching Unity files");
-        await cache.addAll(contentToCache);
-    })());
+    event.waitUntil(
+        caches.open(cacheName)
+            .then(function (cache) {
+                console.log("[Service Worker] Caching app files...");
+                return cache.addAll(contentToCache);
+            })
+            .then(function () {
+                return self.skipWaiting();
+            })
+    );
 });
 
-self.addEventListener("fetch", function (e) {
-    e.respondWith((async function () {
-        let response = await caches.match(e.request);
+self.addEventListener("activate", function (event) {
+    console.log("[Service Worker] Activating...");
 
-        if (response) {
-            return response;
-        }
+    event.waitUntil(
+        caches.keys().then(function (keys) {
+            return Promise.all(
+                keys.map(function (key) {
+                    if (key !== cacheName) {
+                        console.log("[Service Worker] Removing old cache:", key);
+                        return caches.delete(key);
+                    }
+                })
+            );
+        }).then(function () {
+            return self.clients.claim();
+        })
+    );
+});
 
-        response = await fetch(e.request);
+self.addEventListener("fetch", function (event) {
+    if (event.request.method !== "GET") {
+        return;
+    }
 
-        const cache = await caches.open(cacheName);
-        cache.put(e.request, response.clone());
+    event.respondWith(
+        caches.match(event.request).then(function (cachedResponse) {
+            if (cachedResponse) {
+                return cachedResponse;
+            }
 
-        return response;
-    })());
+            return fetch(event.request)
+                .then(function (networkResponse) {
+                    return caches.open(cacheName).then(function (cache) {
+                        cache.put(event.request, networkResponse.clone());
+                        return networkResponse;
+                    });
+                })
+                .catch(function () {
+                    console.log("[Service Worker] Offline and file not cached:", event.request.url);
+                });
+        })
+    );
 });
