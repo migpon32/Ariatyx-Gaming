@@ -7,20 +7,13 @@
 
     {{-- PWA / Unity CSS --}}
     <link rel="stylesheet" href="{{ asset('game/TemplateData/style.css') }}">
-   
+    <link rel="manifest" href="{{ asset('game/manifest.webmanifest') }}">
+    <meta name="theme-color" content="#000000">
+
     {{-- iPhone / iPad support --}}
     <link rel="apple-touch-icon" href="{{ asset('game/icon-192.png') }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <script>
-    if ("serviceWorker" in navigator) {
-        window.addEventListener("load", function () {
-            navigator.serviceWorker.register("/ServiceWorker.js", {
-                scope: "/"
-            });
-        });
-    }
-    </script>
 
     {{-- Laravel to Unity Player Bridge --}}
     <script>
@@ -38,12 +31,20 @@
             return localStorage.getItem("player_name") || "Player";
         }
 
-        function GetLaravelUserId() {
+        function GetLaravelUserIdFromJS() {
             return localStorage.getItem("player_id") || "guest";
         }
 
-        function GetLaravelUsername() {
+        function GetLaravelUsernameFromJS() {
             return localStorage.getItem("player_username") || localStorage.getItem("player_name") || "Player";
+        }
+
+        function GetLaravelUserId() {
+            return GetLaravelUserIdFromJS();
+        }
+
+        function GetLaravelUsername() {
+            return GetLaravelUsernameFromJS();
         }
 
         console.log("LaravelPlayer:", window.LaravelPlayer);
@@ -64,48 +65,43 @@
         </div>
     </div>
 
-    {{-- Service Worker for PWA --}}
-   {{-- Firebase + PWA Service Worker --}}
-<script>
-    if ("serviceWorker" in navigator) {
-        window.addEventListener("load", async function () {
-
-            // PWA Service Worker
-            navigator.serviceWorker.register("/game/ServiceWorker.js")
-                .then(function (registration) {
+    {{-- Correct PWA + Firebase Service Workers --}}
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", async function () {
+                navigator.serviceWorker.register("/ServiceWorker.js", {
+                    scope: "/"
+                }).then(function (registration) {
                     console.log("PWA Service Worker Registered:", registration.scope);
-                })
-                .catch(function (error) {
+                }).catch(function (error) {
                     console.error("PWA Service Worker Error:", error);
                 });
 
-            // Firebase Messaging Service Worker
-            navigator.serviceWorker.register("/firebase-messaging-sw.js")
-                .then(function (registration) {
+                navigator.serviceWorker.register("/firebase-messaging-sw.js", {
+                    scope: "/firebase-cloud-messaging-push-scope"
+                }).then(function (registration) {
                     console.log("Firebase SW Registered:", registration.scope);
-                })
-                .catch(function (error) {
+                }).catch(function (error) {
                     console.error("Firebase SW Error:", error);
                 });
+            });
+        }
+    </script>
 
-        });
-    }
-</script>
     {{-- Unity Exit Button Bridge --}}
     <script>
         function ExitToLauncher() {
             window.location.href = "{{ route('launcher') }}";
+        }
+
+        function ExitGame() {
+            ExitToLauncher();
         }
     </script>
 
     {{-- Firebase Scripts --}}
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
-
-    <script>
-        window.firebaseMessagingSwPath = "{{ asset('game/firebase-messaging-sw.js') }}";
-    </script>
-
     <script src="{{ asset('game/firebase-notification.js') }}"></script>
 
     {{-- Unity WebGL Loader --}}

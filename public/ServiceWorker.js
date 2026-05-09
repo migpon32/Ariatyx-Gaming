@@ -1,4 +1,4 @@
-const cacheName = "BulletDrop-PWA-v3";
+const cacheName = "BulletDrop-PWA-v20";
 
 const contentToCache = [
     "/",
@@ -8,12 +8,12 @@ const contentToCache = [
     "/game/icon-192.png",
     "/game/icon-512.png",
 
+    "/game/TemplateData/style.css",
+
     "/game/Build/BulletDrop.loader.js",
     "/game/Build/BulletDrop.framework.js",
     "/game/Build/BulletDrop.data",
-    "/game/Build/BulletDrop.wasm",
-
-    "/game/TemplateData/style.css"
+    "/game/Build/BulletDrop.wasm"
 ];
 
 self.addEventListener("install", function (event) {
