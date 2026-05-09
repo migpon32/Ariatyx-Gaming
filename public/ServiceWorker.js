@@ -1,15 +1,19 @@
-const cacheName = "BulletDrop-PWA-v2";
+const cacheName = "BulletDrop-PWA-v3";
 
 const contentToCache = [
-    "./",
-    "./Build/BulletDrop.loader.js",
-    "./Build/BulletDrop.framework.js",
-    "./Build/BulletDrop.data",
-    "./Build/BulletDrop.wasm",
-    "./TemplateData/style.css",
-    "./manifest.webmanifest",
-    "./icon-192.png",
-    "./icon-512.png"
+    "/",
+    "/game-play",
+
+    "/game/manifest.webmanifest",
+    "/game/icon-192.png",
+    "/game/icon-512.png",
+
+    "/game/Build/BulletDrop.loader.js",
+    "/game/Build/BulletDrop.framework.js",
+    "/game/Build/BulletDrop.data",
+    "/game/Build/BulletDrop.wasm",
+
+    "/game/TemplateData/style.css"
 ];
 
 self.addEventListener("install", function (event) {
@@ -18,7 +22,6 @@ self.addEventListener("install", function (event) {
     event.waitUntil(
         caches.open(cacheName)
             .then(function (cache) {
-                console.log("[Service Worker] Caching app files...");
                 return cache.addAll(contentToCache);
             })
             .then(function () {
@@ -35,7 +38,6 @@ self.addEventListener("activate", function (event) {
             return Promise.all(
                 keys.map(function (key) {
                     if (key !== cacheName) {
-                        console.log("[Service Worker] Removing old cache:", key);
                         return caches.delete(key);
                     }
                 })
@@ -47,9 +49,7 @@ self.addEventListener("activate", function (event) {
 });
 
 self.addEventListener("fetch", function (event) {
-    if (event.request.method !== "GET") {
-        return;
-    }
+    if (event.request.method !== "GET") return;
 
     event.respondWith(
         caches.match(event.request).then(function (cachedResponse) {
@@ -65,7 +65,7 @@ self.addEventListener("fetch", function (event) {
                     });
                 })
                 .catch(function () {
-                    console.log("[Service Worker] Offline and file not cached:", event.request.url);
+                    return caches.match("/game-play");
                 });
         })
     );
