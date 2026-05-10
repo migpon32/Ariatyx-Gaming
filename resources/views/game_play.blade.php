@@ -17,15 +17,41 @@
 
     {{-- Laravel to Unity Player Bridge --}}
     <script>
-        window.LaravelPlayer = {
+        const serverPlayer = {
             id: @json(auth()->id()),
-            username: @json(auth()->user()->username ?? auth()->user()->name ?? 'Player'),
-            name: @json(auth()->user()->username ?? auth()->user()->name ?? 'Player')
+            username: @json(auth()->check() ? (auth()->user()->username ?? auth()->user()->name) : null),
+            name: @json(auth()->check() ? (auth()->user()->username ?? auth()->user()->name) : null)
         };
 
-        localStorage.setItem("player_id", String(window.LaravelPlayer.id || "guest"));
-        localStorage.setItem("player_name", String(window.LaravelPlayer.name || "Player"));
-        localStorage.setItem("player_username", String(window.LaravelPlayer.username || "Player"));
+        const hasServerPlayer = Boolean(serverPlayer.id && (serverPlayer.username || serverPlayer.name));
+
+        if (hasServerPlayer) {
+            const accountName = String(serverPlayer.username || serverPlayer.name);
+
+            localStorage.setItem("player_id", String(serverPlayer.id));
+            localStorage.setItem("player_name", accountName);
+            localStorage.setItem("player_username", accountName);
+            localStorage.setItem("player_last_synced_at", new Date().toISOString());
+        } else {
+            if (!localStorage.getItem("player_id")) {
+                localStorage.setItem("player_id", "guest");
+            }
+
+            if (!localStorage.getItem("player_name")) {
+                localStorage.setItem("player_name", "Player");
+            }
+
+            if (!localStorage.getItem("player_username")) {
+                localStorage.setItem("player_username", localStorage.getItem("player_name") || "Player");
+            }
+        }
+
+        window.LaravelPlayer = {
+            id: localStorage.getItem("player_id") || "guest",
+            username: localStorage.getItem("player_username") || localStorage.getItem("player_name") || "Player",
+            name: localStorage.getItem("player_name") || localStorage.getItem("player_username") || "Player",
+            isLoggedIn: hasServerPlayer
+        };
 
         function GetPlayerNameFromJS() {
             return localStorage.getItem("player_name") || "Player";
