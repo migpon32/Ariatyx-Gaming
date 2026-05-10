@@ -103,16 +103,6 @@
     </div>
 </a>
 
-   <a href="{{ url('/') }}">
-    <div class="game-card" data-bg="{{ asset('images/whoarewe.png') }}">
-        <img src="{{ asset('images/whoarewe.png') }}" alt="Star Rail">
-        <div class="overlay">
-            <p>View Details</p>
-        </div>
-    </div>
-</a>
-
-            
         </div>
     </div>
 
