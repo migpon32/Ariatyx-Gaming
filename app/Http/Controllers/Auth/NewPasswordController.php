@@ -8,7 +8,6 @@ use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
@@ -19,9 +18,22 @@ class NewPasswordController extends Controller
     /**
      * Display the password reset view.
      */
-    public function create(Request $request): View
+    public function create(Request $request): View|RedirectResponse
     {
-        return view('auth.reset-password', ['request' => $request]);
+        $user = $this->passwordResetUser($request);
+
+        if (! $user) {
+            return redirect()->route('password.request');
+        }
+
+        return view('auth.reset-password', [
+            'email' => $user->email,
+            'questions' => [
+                $user->security_question_1,
+                $user->security_question_2,
+                $user->security_question_3,
+            ],
+        ]);
     }
 
     /**
@@ -31,33 +43,62 @@ class NewPasswordController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $request->merge([
+            'security_answer_1' => trim((string) $request->security_answer_1),
+            'security_answer_2' => trim((string) $request->security_answer_2),
+            'security_answer_3' => trim((string) $request->security_answer_3),
+        ]);
+
+        $uppercaseAnswer = function (string $attribute, mixed $value, \Closure $fail): void {
+            if ($value !== mb_strtoupper($value, 'UTF-8')) {
+                $fail('Security answers must be entered in CAPITAL LETTERS only.');
+            }
+        };
+
         $request->validate([
-            'token' => ['required'],
-            'email' => ['required', 'email'],
+            'security_answer_1' => ['required', 'string', 'max:255', $uppercaseAnswer],
+            'security_answer_2' => ['required', 'string', 'max:255', $uppercaseAnswer],
+            'security_answer_3' => ['required', 'string', 'max:255', $uppercaseAnswer],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        // Here we will attempt to reset the user's password. If it is successful we
-        // will update the password on an actual user model and persist it to the
-        // database. Otherwise we will parse the error and return the response.
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function (User $user) use ($request) {
-                $user->forceFill([
-                    'password' => Hash::make($request->password),
-                    'remember_token' => Str::random(60),
-                ])->save();
+        $user = $this->passwordResetUser($request);
 
-                event(new PasswordReset($user));
-            }
-        );
+        if (! $user) {
+            return redirect()->route('password.request');
+        }
 
-        // If the password was successfully reset, we will redirect the user back to
-        // the application's home authenticated view. If there is an error we can
-        // redirect them back to where they came from with their error message.
-        return $status == Password::PASSWORD_RESET
-                    ? redirect()->route('login')->with('status', __($status))
-                    : back()->withInput($request->only('email'))
-                        ->withErrors(['email' => __($status)]);
+        if (! $this->answersMatch($request, $user)) {
+            throw ValidationException::withMessages([
+                'security_answer_1' => 'The security answers do not match our records.',
+            ]);
+        }
+
+        $user->forceFill([
+            'password' => Hash::make($request->password),
+            'remember_token' => Str::random(60),
+        ])->save();
+
+        event(new PasswordReset($user));
+
+        $request->session()->forget('password_reset_user_id');
+
+        return redirect()
+            ->route('login')
+            ->with('status', 'Your password has been reset. You can now sign in.');
+    }
+
+    private function passwordResetUser(Request $request): ?User
+    {
+        $userId = $request->session()->get('password_reset_user_id');
+
+        return $userId ? User::find($userId) : null;
+    }
+
+    private function answersMatch(Request $request, User $user): bool
+    {
+        return Hash::check($request->security_answer_1, $user->security_answer_1)
+            && Hash::check($request->security_answer_2, $user->security_answer_2)
+            && Hash::check($request->security_answer_3, $user->security_answer_3);
     }
 }

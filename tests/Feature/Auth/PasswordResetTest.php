@@ -1,60 +1,72 @@
 <?php
 
 use App\Models\User;
-use App\Notifications\AriatyxResetPassword;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Hash;
 
-test('reset password link screen can be rendered', function () {
+test('reset password request screen can be rendered', function () {
     $response = $this->get('/forgot-password');
 
     $response->assertStatus(200);
 });
 
-test('reset password link can be requested', function () {
-    Notification::fake();
-
+test('security question reset screen can be requested', function () {
     $user = User::factory()->create();
 
-    $this->post('/forgot-password', ['email' => $user->email]);
+    $response = $this->post('/forgot-password', ['email' => $user->email]);
 
-    Notification::assertSentTo($user, AriatyxResetPassword::class);
+    $response
+        ->assertSessionHasNoErrors()
+        ->assertRedirect(route('password.reset'));
+
+    $this->withSession(['password_reset_user_id' => $user->id])
+        ->get('/reset-password')
+        ->assertStatus(200)
+        ->assertSee($user->security_question_1)
+        ->assertSee($user->security_question_2)
+        ->assertSee($user->security_question_3);
 });
 
-test('reset password screen can be rendered', function () {
-    Notification::fake();
-
+test('password can be reset with valid security answers', function () {
     $user = User::factory()->create();
 
-    $this->post('/forgot-password', ['email' => $user->email]);
+    $this->withSession(['password_reset_user_id' => $user->id])
+        ->post('/reset-password', [
+            'security_answer_1' => 'MANILA',
+            'security_answer_2' => 'BULLET DROP',
+            'security_answer_3' => 'ARIATYX',
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ])
+        ->assertSessionHasNoErrors()
+        ->assertRedirect(route('login'));
 
-    Notification::assertSentTo($user, AriatyxResetPassword::class, function ($notification) {
-        $response = $this->get('/reset-password/'.$notification->token);
-
-        $response->assertStatus(200);
-
-        return true;
-    });
+    expect(Hash::check('new-password', $user->fresh()->password))->toBeTrue();
 });
 
-test('password can be reset with valid token', function () {
-    Notification::fake();
-
+test('password cannot be reset with lowercase security answers', function () {
     $user = User::factory()->create();
 
-    $this->post('/forgot-password', ['email' => $user->email]);
+    $this->withSession(['password_reset_user_id' => $user->id])
+        ->post('/reset-password', [
+            'security_answer_1' => 'manila',
+            'security_answer_2' => 'BULLET DROP',
+            'security_answer_3' => 'ARIATYX',
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ])
+        ->assertSessionHasErrors('security_answer_1');
+});
 
-    Notification::assertSentTo($user, AriatyxResetPassword::class, function ($notification) use ($user) {
-        $response = $this->post('/reset-password', [
-            'token' => $notification->token,
-            'email' => $user->email,
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ]);
+test('password cannot be reset without matching confirmation', function () {
+    $user = User::factory()->create();
 
-        $response
-            ->assertSessionHasNoErrors()
-            ->assertRedirect(route('login'));
-
-        return true;
-    });
+    $this->withSession(['password_reset_user_id' => $user->id])
+        ->post('/reset-password', [
+            'security_answer_1' => 'MANILA',
+            'security_answer_2' => 'BULLET DROP',
+            'security_answer_3' => 'ARIATYX',
+            'password' => 'new-password',
+            'password_confirmation' => 'different-password',
+        ])
+        ->assertSessionHasErrors('password');
 });

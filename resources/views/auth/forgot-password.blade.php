@@ -19,7 +19,7 @@
             @endif
 
             <p class="text-[10px] text-gray-500 mb-8 uppercase font-bold tracking-widest leading-tight">
-                Enter your email address below and we will send you a secure link to reset your account password.
+                Enter your Gmail account below. You will answer your three security questions before creating a new password.
             </p>
 
             <form method="POST" action="{{ route('password.email') }}">
@@ -27,7 +27,7 @@
 
                 <div class="mb-6">
                     <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">
-                        Email Address
+                        Gmail Account
                     </label>
 
                     <input
@@ -43,7 +43,7 @@
                 </div>
 
                 <button type="submit" class="w-full bg-[#111] hover:bg-red-600 text-white font-bold uppercase tracking-widest py-4 transition shadow-lg">
-                    Email Reset Link
+                    Continue
                 </button>
 
                 <div class="mt-6 text-center">

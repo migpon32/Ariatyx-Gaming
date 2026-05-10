@@ -31,6 +31,12 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
+            'security_question_1' => 'What city were you born in?',
+            'security_answer_1' => Hash::make('MANILA'),
+            'security_question_2' => 'What is your favorite game?',
+            'security_answer_2' => Hash::make('BULLET DROP'),
+            'security_question_3' => 'What is your first school?',
+            'security_answer_3' => Hash::make('ARIATYX'),
             'remember_token' => Str::random(10),
         ];
     }

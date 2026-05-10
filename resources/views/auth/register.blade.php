@@ -28,24 +28,25 @@
 
             <form method="POST" action="{{ route('register') }}">
                 @csrf
-<div class="mb-4">
-    <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">
-        Username
-    </label>
 
-    <input
-        type="text"
-        name="username"
-        value="{{ old('username') }}"
-        class="w-full bg-gray-50 border border-gray-200 focus:ring-1 focus:ring-red-600 p-3 text-sm outline-none @error('username') border-red-500 @enderror"
-        required
-        autofocus
-    >
+                <div class="mb-4">
+                    <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">
+                        Username
+                    </label>
 
-    @error('username')
-        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-    @enderror
-</div>
+                    <input
+                        type="text"
+                        name="username"
+                        value="{{ old('username') }}"
+                        class="w-full bg-gray-50 border border-gray-200 focus:ring-1 focus:ring-red-600 p-3 text-sm outline-none @error('username') border-red-500 @enderror"
+                        required
+                        autofocus
+                    >
+
+                    @error('username')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
 
                 <div class="mb-4">
                     <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">
@@ -78,7 +79,7 @@
                         id="register_password"
                         type="password"
                         name="password"
-                        class="w-full bg-gray-50 border border-gray-200 focus:ring-1 focus:ring-red-600 p-3 pr-12 text-sm outline-none @error('password') border-red-500 @enderror"
+                        class="w-full bg-gray-50 border border-gray-200 focus:ring-1 focus:ring-red-600 p-3 pr-16 text-sm outline-none @error('password') border-red-500 @enderror"
                         required
                         autocomplete="new-password"
                     >
@@ -86,9 +87,9 @@
                     <button
                         type="button"
                         onclick="togglePassword('register_password', this)"
-                        class="absolute right-3 top-8 text-gray-500 hover:text-red-600 text-lg"
+                        class="absolute right-3 top-8 text-gray-500 hover:text-red-600 text-[10px] font-bold uppercase"
                     >
-                        👁
+                        Show
                     </button>
 
                     @error('password')
@@ -107,7 +108,7 @@
                         id="register_password_confirmation"
                         type="password"
                         name="password_confirmation"
-                        class="w-full bg-gray-50 border border-gray-200 focus:ring-1 focus:ring-red-600 p-3 pr-12 text-sm outline-none"
+                        class="w-full bg-gray-50 border border-gray-200 focus:ring-1 focus:ring-red-600 p-3 pr-16 text-sm outline-none"
                         required
                         autocomplete="new-password"
                     >
@@ -115,10 +116,115 @@
                     <button
                         type="button"
                         onclick="togglePassword('register_password_confirmation', this)"
-                        class="absolute right-3 top-8 text-gray-500 hover:text-red-600 text-lg"
+                        class="absolute right-3 top-8 text-gray-500 hover:text-red-600 text-[10px] font-bold uppercase"
                     >
-                        👁
+                        Show
                     </button>
+                </div>
+
+                <div class="mb-6 border-t border-gray-100 pt-6">
+                    <h3 class="text-xs font-black uppercase tracking-[0.2em] text-[#111] mb-4">
+                        Security Questions
+                    </h3>
+
+                    <div class="mb-4">
+                        <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">
+                            Security Question 1
+                        </label>
+
+                        <input
+                            type="text"
+                            name="security_question_1"
+                            value="{{ old('security_question_1') }}"
+                            class="w-full bg-gray-50 border border-gray-200 focus:ring-1 focus:ring-red-600 p-3 text-sm outline-none @error('security_question_1') border-red-500 @enderror"
+                            required
+                        >
+
+                        <x-input-error :messages="$errors->get('security_question_1')" class="mt-2" />
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">
+                            Answer 1
+                        </label>
+
+                        <input
+                            type="text"
+                            name="security_answer_1"
+                            value="{{ old('security_answer_1') }}"
+                            oninput="forceUppercase(this)"
+                            class="w-full uppercase bg-gray-50 border border-gray-200 focus:ring-1 focus:ring-red-600 p-3 text-sm outline-none @error('security_answer_1') border-red-500 @enderror"
+                            required
+                        >
+
+                        <x-input-error :messages="$errors->get('security_answer_1')" class="mt-2" />
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">
+                            Security Question 2
+                        </label>
+
+                        <input
+                            type="text"
+                            name="security_question_2"
+                            value="{{ old('security_question_2') }}"
+                            class="w-full bg-gray-50 border border-gray-200 focus:ring-1 focus:ring-red-600 p-3 text-sm outline-none @error('security_question_2') border-red-500 @enderror"
+                            required
+                        >
+
+                        <x-input-error :messages="$errors->get('security_question_2')" class="mt-2" />
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">
+                            Answer 2
+                        </label>
+
+                        <input
+                            type="text"
+                            name="security_answer_2"
+                            value="{{ old('security_answer_2') }}"
+                            oninput="forceUppercase(this)"
+                            class="w-full uppercase bg-gray-50 border border-gray-200 focus:ring-1 focus:ring-red-600 p-3 text-sm outline-none @error('security_answer_2') border-red-500 @enderror"
+                            required
+                        >
+
+                        <x-input-error :messages="$errors->get('security_answer_2')" class="mt-2" />
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">
+                            Security Question 3
+                        </label>
+
+                        <input
+                            type="text"
+                            name="security_question_3"
+                            value="{{ old('security_question_3') }}"
+                            class="w-full bg-gray-50 border border-gray-200 focus:ring-1 focus:ring-red-600 p-3 text-sm outline-none @error('security_question_3') border-red-500 @enderror"
+                            required
+                        >
+
+                        <x-input-error :messages="$errors->get('security_question_3')" class="mt-2" />
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">
+                            Answer 3
+                        </label>
+
+                        <input
+                            type="text"
+                            name="security_answer_3"
+                            value="{{ old('security_answer_3') }}"
+                            oninput="forceUppercase(this)"
+                            class="w-full uppercase bg-gray-50 border border-gray-200 focus:ring-1 focus:ring-red-600 p-3 text-sm outline-none @error('security_answer_3') border-red-500 @enderror"
+                            required
+                        >
+
+                        <x-input-error :messages="$errors->get('security_answer_3')" class="mt-2" />
+                    </div>
                 </div>
 
                 <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold uppercase tracking-widest py-4 transition shadow-lg mb-4">
@@ -137,13 +243,17 @@
         function togglePassword(id, button) {
             const input = document.getElementById(id);
 
-            if (input.type === "password") {
-                input.type = "text";
-                button.textContent = "🙈";
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.textContent = 'Hide';
             } else {
-                input.type = "password";
-                button.textContent = "👁";
+                input.type = 'password';
+                button.textContent = 'Show';
             }
+        }
+
+        function forceUppercase(input) {
+            input.value = input.value.toUpperCase();
         }
     </script>
 </x-guest-layout>

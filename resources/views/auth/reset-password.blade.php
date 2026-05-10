@@ -12,26 +12,51 @@
                 Reset Password
             </h2>
 
+            @if (session('status'))
+                <div class="mb-4 p-3 bg-green-50 border-l-4 border-green-600 text-green-700 text-xs font-bold uppercase">
+                    {{ session('status') }}
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('password.store') }}">
                 @csrf
 
-                <input type="hidden" name="token" value="{{ $request->route('token') }}">
-
                 <div class="mb-4">
                     <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">
-                        Email Address
+                        Gmail Account
                     </label>
 
                     <input
                         type="email"
-                        name="email"
-                        value="{{ old('email', $request->email) }}"
+                        value="{{ $email }}"
                         class="w-full bg-gray-50 border border-gray-200 p-3 text-sm outline-none"
-                        required
                         readonly
                     >
+                </div>
 
-                    <x-input-error :messages="$errors->get('email')" class="mt-2" />
+                <div class="mb-6 border-t border-gray-100 pt-6">
+                    <h3 class="text-xs font-black uppercase tracking-[0.2em] text-[#111] mb-4">
+                        Security Questions
+                    </h3>
+
+                    @foreach ($questions as $index => $question)
+                        <div class="mb-4">
+                            <label class="block text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-2">
+                                {{ $question }}
+                            </label>
+
+                            <input
+                                type="text"
+                                name="security_answer_{{ $index + 1 }}"
+                                value="{{ old('security_answer_' . ($index + 1)) }}"
+                                oninput="forceUppercase(this)"
+                                class="w-full uppercase bg-gray-50 border border-gray-200 focus:ring-1 focus:ring-red-600 p-3 text-sm outline-none"
+                                required
+                            >
+
+                            <x-input-error :messages="$errors->get('security_answer_' . ($index + 1))" class="mt-2" />
+                        </div>
+                    @endforeach
                 </div>
 
                 <div class="mb-4 relative">
@@ -43,7 +68,7 @@
                         id="reset_password"
                         type="password"
                         name="password"
-                        class="w-full bg-gray-50 border border-gray-200 focus:ring-1 focus:ring-red-600 p-3 pr-12 text-sm outline-none"
+                        class="w-full bg-gray-50 border border-gray-200 focus:ring-1 focus:ring-red-600 p-3 pr-16 text-sm outline-none"
                         required
                         autocomplete="new-password"
                     >
@@ -51,9 +76,9 @@
                     <button
                         type="button"
                         onclick="togglePassword('reset_password', this)"
-                        class="absolute right-3 top-8 text-gray-500 hover:text-red-600 text-lg"
+                        class="absolute right-3 top-8 text-gray-500 hover:text-red-600 text-[10px] font-bold uppercase"
                     >
-                        👁
+                        Show
                     </button>
 
                     <x-input-error :messages="$errors->get('password')" class="mt-2" />
@@ -68,7 +93,7 @@
                         id="reset_password_confirmation"
                         type="password"
                         name="password_confirmation"
-                        class="w-full bg-gray-50 border border-gray-200 focus:ring-1 focus:ring-red-600 p-3 pr-12 text-sm outline-none"
+                        class="w-full bg-gray-50 border border-gray-200 focus:ring-1 focus:ring-red-600 p-3 pr-16 text-sm outline-none"
                         required
                         autocomplete="new-password"
                     >
@@ -76,9 +101,9 @@
                     <button
                         type="button"
                         onclick="togglePassword('reset_password_confirmation', this)"
-                        class="absolute right-3 top-8 text-gray-500 hover:text-red-600 text-lg"
+                        class="absolute right-3 top-8 text-gray-500 hover:text-red-600 text-[10px] font-bold uppercase"
                     >
-                        👁
+                        Show
                     </button>
                 </div>
 
@@ -93,13 +118,17 @@
         function togglePassword(id, button) {
             const input = document.getElementById(id);
 
-            if (input.type === "password") {
-                input.type = "text";
-                button.textContent = "🙈";
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.textContent = 'Hide';
             } else {
-                input.type = "password";
-                button.textContent = "👁";
+                input.type = 'password';
+                button.textContent = 'Show';
             }
+        }
+
+        function forceUppercase(input) {
+            input.value = input.value.toUpperCase();
         }
     </script>
 </x-guest-layout>

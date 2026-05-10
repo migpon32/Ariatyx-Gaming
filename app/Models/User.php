@@ -7,9 +7,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-// 🔥 ADD THIS
-use App\Notifications\AriatyxResetPassword;
-
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
@@ -22,6 +19,12 @@ class User extends Authenticatable
         'username',
         'email',
         'password',
+        'security_question_1',
+        'security_answer_1',
+        'security_question_2',
+        'security_answer_2',
+        'security_question_3',
+        'security_answer_3',
     ];
 
     /**
@@ -30,6 +33,9 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'security_answer_1',
+        'security_answer_2',
+        'security_answer_3',
     ];
 
     /**
@@ -41,13 +47,5 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
-    }
-
-    /**
-     * 🔥 CUSTOM PASSWORD RESET EMAIL (Ariatyx Gaming)
-     */
-    public function sendPasswordResetNotification($token)
-    {
-        $this->notify(new AriatyxResetPassword($token));
     }
 }
