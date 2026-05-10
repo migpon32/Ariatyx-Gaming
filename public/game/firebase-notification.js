@@ -1,3 +1,7 @@
+if (typeof firebase === "undefined") {
+    console.warn("Firebase is unavailable. Notifications are disabled while offline.");
+    window.RequestFirebaseNotificationPermission = async function () {};
+} else {
 const firebaseConfig = {
     apiKey: "AIzaSyD4QZ4jHI_TvxzHdEtTVoz_9-dOxoaCquw",
     authDomain: "push-notif-49af1.firebaseapp.com",
@@ -63,3 +67,4 @@ messaging.onMessage((payload) => {
 });
 
 window.RequestFirebaseNotificationPermission = RequestFirebaseNotificationPermission;
+}
