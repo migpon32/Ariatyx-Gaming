@@ -22,6 +22,10 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::get('/game-play', function () {
+    return view('game_play');
+})->name('game.play');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -33,10 +37,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/launcher', function () {
         return view('launcher');
     })->name('launcher');
-
-    Route::get('/game-play', function () {
-        return view('game_play');
-    })->name('game.play');
 });
 
 require __DIR__.'/auth.php';
