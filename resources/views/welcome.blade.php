@@ -80,14 +80,16 @@
         <h2 class="text-4xl font-black uppercase italic mb-12">Our Game</h2>
         
         <div class="flex justify-center">
-            <a href="{{ route('login') }}" class="group cursor-pointer w-full max-w-sm block">
+            <a href="{{ Auth::check() ? route('dashboard') : route('login') }}" class="group cursor-pointer w-full max-w-sm block">
                 <div class="h-96 bg-[#111] mb-4 overflow-hidden relative shadow-xl border-b-4 border-transparent group-hover:border-red-600 transition-all">
                     <div class="absolute inset-0 bg-red-600 opacity-0 group-hover:opacity-20 transition"></div>
                     <div class="flex flex-col items-center justify-center h-full p-8">
                         <span class="text-red-600 text-xs font-bold tracking-widest uppercase mb-2">Play Now</span>
                         <h3 class="text-white text-5xl font-black italic uppercase leading-none mb-4">BULLET<br>DROP</h3>
                         <div class="w-12 h-1 bg-white mb-4"></div>
-                        <p class="text-gray-400 text-xs uppercase tracking-tighter">Click to Sign In & Play</p>
+                        <p class="text-gray-400 text-xs uppercase tracking-tighter">
+                            {{ Auth::check() ? 'Click to Open Dashboard' : 'Click to Sign In & Play' }}
+                        </p>
                     </div>
                 </div>
                 <h3 class="font-bold uppercase tracking-widest text-sm text-[#111]">Bullet Drop: Official Version</h3>
