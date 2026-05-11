@@ -1,4 +1,4 @@
-const cacheName = "BulletDrop-PWA-v25";
+const cacheName = "BulletDrop-PWA-v27";
 const gamePageUrl = "/game-play";
 
 const contentToCache = [
