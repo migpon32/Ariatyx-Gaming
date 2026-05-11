@@ -24,7 +24,7 @@ Route::get('/dashboard', function () {
 
 Route::get('/game-play', function () {
     return view('game_play');
-})->name('game.play');
+})->middleware(['auth', 'verified'])->name('game.play');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

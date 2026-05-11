@@ -17,63 +17,49 @@
 
     {{-- Laravel to Unity Player Bridge --}}
     <script>
-        const serverPlayer = {
-            id: @json(auth()->id()),
-            username: @json(auth()->check() ? (auth()->user()->username ?? auth()->user()->name) : null),
-            name: @json(auth()->check() ? (auth()->user()->username ?? auth()->user()->name) : null)
+        @php
+            $player = auth()->user();
+            $playerName = trim((string) ($player?->username ?: $player?->name ?: $player?->email ?: 'Player'));
+            $playerId = $player?->id ?: 'guest';
+        @endphp
+
+        // Make functions globally available BEFORE Unity loads
+        window.GetLaravelUserIdFromJS = function() {
+            return '{{ $playerId }}';
+        };
+        
+        window.GetLaravelUsernameFromJS = function() {
+            return '{{ addslashes($playerName) }}';
+        };
+        
+        window.GetPlayerNameFromJS = function() {
+            return '{{ addslashes($playerName) }}';
+        };
+        
+        window.GetLaravelUserId = function() {
+            return window.GetLaravelUserIdFromJS();
+        };
+        
+        window.GetLaravelUsername = function() {
+            return window.GetLaravelUsernameFromJS();
         };
 
-        const hasServerPlayer = Boolean(serverPlayer.id && (serverPlayer.username || serverPlayer.name));
-
-        if (hasServerPlayer) {
-            const accountName = String(serverPlayer.username || serverPlayer.name);
-
-            localStorage.setItem("player_id", String(serverPlayer.id));
-            localStorage.setItem("player_name", accountName);
-            localStorage.setItem("player_username", accountName);
-            localStorage.setItem("player_last_synced_at", new Date().toISOString());
-        } else {
-            if (!localStorage.getItem("player_id")) {
-                localStorage.setItem("player_id", "guest");
-            }
-
-            if (!localStorage.getItem("player_name")) {
-                localStorage.setItem("player_name", "Player");
-            }
-
-            if (!localStorage.getItem("player_username")) {
-                localStorage.setItem("player_username", localStorage.getItem("player_name") || "Player");
-            }
-        }
+        // Store in localStorage for persistence
+        localStorage.setItem("player_id", '{{ $playerId }}');
+        localStorage.setItem("player_name", '{{ addslashes($playerName) }}');
+        localStorage.setItem("player_username", '{{ addslashes($playerName) }}');
+        localStorage.setItem("player_last_synced_at", new Date().toISOString());
 
         window.LaravelPlayer = {
             id: localStorage.getItem("player_id") || "guest",
             username: localStorage.getItem("player_username") || localStorage.getItem("player_name") || "Player",
             name: localStorage.getItem("player_name") || localStorage.getItem("player_username") || "Player",
-            isLoggedIn: hasServerPlayer
+            isLoggedIn: {{ $player ? 'true' : 'false' }}
         };
 
-        function GetPlayerNameFromJS() {
-            return localStorage.getItem("player_name") || "Player";
-        }
-
-        function GetLaravelUserIdFromJS() {
-            return localStorage.getItem("player_id") || "guest";
-        }
-
-        function GetLaravelUsernameFromJS() {
-            return localStorage.getItem("player_username") || localStorage.getItem("player_name") || "Player";
-        }
-
-        function GetLaravelUserId() {
-            return GetLaravelUserIdFromJS();
-        }
-
-        function GetLaravelUsername() {
-            return GetLaravelUsernameFromJS();
-        }
-
-        console.log("LaravelPlayer:", window.LaravelPlayer);
+        console.log("LaravelPlayer Loaded:", window.LaravelPlayer);
+        console.log("GetLaravelUsernameFromJS:", window.GetLaravelUsernameFromJS());
+        console.log("GetLaravelUserIdFromJS:", window.GetLaravelUserIdFromJS());
     </script>
 
     <div class="py-12 bg-black min-h-screen flex flex-col items-center justify-center">
@@ -89,6 +75,11 @@
 
             <div id="unity-warning"></div>
         </div>
+    </div>
+
+    {{-- Debug Panel --}}
+    <div id="debug-panel" style="position: fixed; bottom: 10px; left: 10px; background: rgba(0,0,0,0.8); color: #0f0; padding: 8px; font-size: 11px; font-family: monospace; z-index: 9999; border-radius: 5px; pointer-events: none;">
+        Loading...
     </div>
 
     {{-- Correct PWA + Firebase Service Workers --}}
@@ -137,6 +128,7 @@
         var loadingBar = document.querySelector("#unity-loading-bar");
         var progressBarFull = document.querySelector("#unity-progress-bar-full");
         var warningBanner = document.querySelector("#unity-warning");
+        var debugPanel = document.querySelector("#debug-panel");
 
         function unityShowBanner(msg, type) {
             function updateBannerVisibility() {
@@ -164,6 +156,16 @@
 
             updateBannerVisibility();
         }
+
+        // Update debug panel with user info
+        function updateDebugPanel() {
+            if (debugPanel) {
+                var userId = window.GetLaravelUserIdFromJS ? window.GetLaravelUserIdFromJS() : 'unknown';
+                var username = window.GetLaravelUsernameFromJS ? window.GetLaravelUsernameFromJS() : 'unknown';
+                debugPanel.innerHTML = `👤 User: ${username}<br>🆔 ID: ${userId}<br>🎮 Unity: Loading...`;
+            }
+        }
+        updateDebugPanel();
 
         var buildUrl = "{{ asset('game/Build') }}";
         var loaderUrl = buildUrl + "/BulletDrop.loader.js";
@@ -201,14 +203,31 @@
                 window.unityInstance = unityInstance;
                 loadingBar.style.display = "none";
                 console.log("Unity loaded successfully");
+                
+                if (debugPanel) {
+                    var userId = window.GetLaravelUserIdFromJS ? window.GetLaravelUserIdFromJS() : 'unknown';
+                    var username = window.GetLaravelUsernameFromJS ? window.GetLaravelUsernameFromJS() : 'unknown';
+                    debugPanel.innerHTML = `👤 User: ${username}<br>🆔 ID: ${userId}<br>🎮 Unity: Loaded ✓`;
+                    setTimeout(function() {
+                        debugPanel.style.opacity = '0.5';
+                    }, 5000);
+                }
             }).catch(function (message) {
                 console.error(message);
+                if (debugPanel) {
+                    debugPanel.innerHTML += `<br>❌ Error: ${message.substring(0, 50)}`;
+                }
                 alert(message);
             });
         };
 
         script.onerror = function () {
-            alert("Failed to load Unity loader. Check Build file names.");
+            var errorMsg = "Failed to load Unity loader. Check Build file names.";
+            console.error(errorMsg);
+            if (debugPanel) {
+                debugPanel.innerHTML += `<br>❌ ${errorMsg}`;
+            }
+            alert(errorMsg);
         };
 
         document.body.appendChild(script);

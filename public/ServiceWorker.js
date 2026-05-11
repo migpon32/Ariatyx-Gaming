@@ -1,9 +1,7 @@
-const cacheName = "BulletDrop-PWA-v23";
+const cacheName = "BulletDrop-PWA-v24";
 const gamePageUrl = "/game-play";
 
 const contentToCache = [
-    gamePageUrl,
-
     "/game/manifest.webmanifest",
     "/game/icon-192.png",
     "/game/icon-512.png",
@@ -84,24 +82,7 @@ self.addEventListener("fetch", function (event) {
             return;
         }
 
-        event.respondWith(
-            fetch(event.request)
-                .then(function (networkResponse) {
-                    if (networkResponse.ok && !networkResponse.redirected) {
-                        return caches.open(cacheName).then(function (cache) {
-                            cache.put(gamePageUrl, networkResponse.clone());
-                            return networkResponse;
-                        });
-                    }
-
-                    return networkResponse;
-                })
-                .catch(function () {
-                    return caches.match(gamePageUrl).then(function (cachedResponse) {
-                        return cachedResponse || Response.error();
-                    });
-                })
-        );
+        event.respondWith(fetch(event.request, { cache: "no-store" }));
         return;
     }
 
