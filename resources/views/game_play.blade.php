@@ -82,8 +82,34 @@
         Loading...
     </div>
 
+    <div id="network-status" style="position: fixed; top: 12px; right: 12px; z-index: 10000; background: rgba(0,0,0,0.82); color: #ffd700; border: 1px solid rgba(255,215,0,0.45); border-radius: 4px; padding: 7px 12px; font-size: 12px; font-weight: 700; letter-spacing: 0; text-transform: uppercase; pointer-events: none;" hidden>
+        Offline
+    </div>
+
     {{-- Correct PWA + Firebase Service Workers --}}
     <script>
+        window.IsBulletDropOnlineFromJS = function () {
+            return navigator.onLine ? "1" : "0";
+        };
+
+        window.GetBulletDropNetworkStatusFromJS = function () {
+            return navigator.onLine ? "Online" : "Offline";
+        };
+
+        function updateNetworkStatusBadge() {
+            var networkStatus = document.getElementById("network-status");
+            if (!networkStatus) {
+                return;
+            }
+
+            networkStatus.textContent = navigator.onLine ? "Online" : "Offline";
+            networkStatus.hidden = navigator.onLine;
+        }
+
+        window.addEventListener("online", updateNetworkStatusBadge);
+        window.addEventListener("offline", updateNetworkStatusBadge);
+        updateNetworkStatusBadge();
+
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", async function () {
                 navigator.serviceWorker.register("/ServiceWorker.js", {
@@ -94,13 +120,26 @@
                     console.error("PWA Service Worker Error:", error);
                 });
 
-                navigator.serviceWorker.register("/firebase-messaging-sw.js", {
-                    scope: "/firebase-cloud-messaging-push-scope"
-                }).then(function (registration) {
-                    console.log("Firebase SW Registered:", registration.scope);
-                }).catch(function (error) {
-                    console.error("Firebase SW Error:", error);
-                });
+                registerFirebaseServiceWorker();
+            });
+
+            window.addEventListener("online", registerFirebaseServiceWorker);
+        }
+
+        function registerFirebaseServiceWorker() {
+            if (!navigator.onLine || !("serviceWorker" in navigator) || window.firebaseServiceWorkerRegistered) {
+                return;
+            }
+
+            window.firebaseServiceWorkerRegistered = true;
+
+            navigator.serviceWorker.register("/firebase-messaging-sw.js", {
+                scope: "/firebase-cloud-messaging-push-scope"
+            }).then(function (registration) {
+                console.log("Firebase SW Registered:", registration.scope);
+            }).catch(function (error) {
+                window.firebaseServiceWorkerRegistered = false;
+                console.error("Firebase SW Error:", error);
             });
         }
     </script>
@@ -117,9 +156,43 @@
     </script>
 
     {{-- Firebase Scripts --}}
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
-    <script src="{{ asset('game/firebase-notification.js') }}"></script>
+    <script>
+        window.RequestFirebaseNotificationPermission = window.RequestFirebaseNotificationPermission || async function () {};
+
+        function loadScript(src) {
+            return new Promise(function (resolve, reject) {
+                var script = document.createElement("script");
+                script.src = src;
+                script.async = true;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        function loadFirebaseNotifications() {
+            if (!navigator.onLine || window.firebaseNotificationsLoaded) {
+                return;
+            }
+
+            window.firebaseNotificationsLoaded = true;
+
+            loadScript("https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js")
+                .then(function () {
+                    return loadScript("https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js");
+                })
+                .then(function () {
+                    return loadScript("{{ asset('game/firebase-notification.js') }}");
+                })
+                .catch(function (error) {
+                    window.firebaseNotificationsLoaded = false;
+                    console.warn("Firebase notifications are unavailable right now.", error);
+                });
+        }
+
+        window.addEventListener("load", loadFirebaseNotifications);
+        window.addEventListener("online", loadFirebaseNotifications);
+    </script>
 
     {{-- Unity WebGL Loader --}}
     <script>
