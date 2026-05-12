@@ -3,22 +3,13 @@ const cacheName = "BulletDrop-PWA-" + gameVersion;
 const versionQuery = "?v=" + gameVersion;
 
 const cacheableShellAssets = [
-    "/game-play",
     "/game/manifest.webmanifest" + versionQuery,
     "/game/icon-192.png" + versionQuery,
     "/game/icon-512.png" + versionQuery,
     "/game/TemplateData/style.css" + versionQuery,
-    "/game/TemplateData/unity-logo-dark.png" + versionQuery,
-    "/game/TemplateData/progress-bar-empty-dark.png" + versionQuery,
-    "/game/TemplateData/progress-bar-full-dark.png" + versionQuery
-];
-
-const offlineGameAssets = [
-    ...cacheableShellAssets,
-    "/game/Build/BulletDrop.loader.js" + versionQuery,
-    "/game/Build/BulletDrop.data" + versionQuery,
-    "/game/Build/BulletDrop.framework.js" + versionQuery,
-    "/game/Build/BulletDrop.wasm" + versionQuery
+    "/game/TemplateData/unity-logo-dark.png",
+    "/game/TemplateData/progress-bar-empty-dark.png",
+    "/game/TemplateData/progress-bar-full-dark.png"
 ];
 
 const cacheableShellPaths = new Set(
@@ -91,30 +82,6 @@ self.addEventListener("message", function (event) {
     if (event.data && event.data.type === "SKIP_WAITING") {
         self.skipWaiting();
     }
-
-    if (event.data && event.data.type === "CACHE_BULLETDROP_OFFLINE") {
-        const assets = Array.isArray(event.data.assets) && event.data.assets.length
-            ? event.data.assets
-            : offlineGameAssets;
-
-        event.waitUntil(
-            caches.open(cacheName).then(function (cache) {
-                return Promise.all(
-                    assets.map(function (assetUrl) {
-                        return fetch(assetUrl, {
-                            cache: "reload",
-                            credentials: "same-origin"
-                        }).then(function (response) {
-                            if (!response || !response.ok) return;
-                            return cache.put(assetUrl, response);
-                        }).catch(function (error) {
-                            console.warn("[Service Worker] Failed to warm offline cache:", assetUrl, error);
-                        });
-                    })
-                );
-            })
-        );
-    }
 });
 
 self.addEventListener("fetch", function (event) {
@@ -128,62 +95,17 @@ self.addEventListener("fetch", function (event) {
 
     const acceptHeader = event.request.headers.get("accept") || "";
     const isNavigation = event.request.mode === "navigate" || acceptHeader.includes("text/html");
-    const isGamePlayNavigation = isNavigation && requestUrl.pathname === "/game-play";
     const shouldNeverCache =
+        isNavigation ||
+        requestUrl.pathname === "/game-play" ||
         requestUrl.pathname === "/ServiceWorker.js" ||
-        (isNavigation && !isGamePlayNavigation);
+        isUnityBuildFile(requestUrl.pathname);
 
     if (shouldNeverCache) {
         event.respondWith(
             fetch(event.request, {
                 cache: "no-store",
                 credentials: "same-origin"
-            })
-        );
-        return;
-    }
-
-    if (isGamePlayNavigation) {
-        event.respondWith(
-            fetch(event.request, {
-                cache: "no-store",
-                credentials: "same-origin"
-            }).then(function (networkResponse) {
-                if (!networkResponse || !networkResponse.ok) {
-                    return networkResponse;
-                }
-
-                return caches.open(cacheName).then(function (cache) {
-                    cache.put("/game-play", networkResponse.clone());
-                    return networkResponse;
-                });
-            }).catch(function () {
-                return caches.match("/game-play", {
-                    ignoreSearch: true
-                });
-            })
-        );
-        return;
-    }
-
-    if (isUnityBuildFile(requestUrl.pathname)) {
-        event.respondWith(
-            caches.match(event.request).then(function (cachedResponse) {
-                if (cachedResponse) return cachedResponse;
-
-                return fetch(event.request, {
-                    cache: "reload",
-                    credentials: "same-origin"
-                }).then(function (networkResponse) {
-                    if (!networkResponse || !networkResponse.ok) {
-                        return networkResponse;
-                    }
-
-                    return caches.open(cacheName).then(function (cache) {
-                        cache.put(event.request, networkResponse.clone());
-                        return networkResponse;
-                    });
-                });
             })
         );
         return;
