@@ -5,15 +5,67 @@
         {{ asset('images/War_Bird.png') }}
     </x-slot>
 
+    @php
+        $gameVersion = 'v201';
+    @endphp
+
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     {{-- PWA / Unity CSS --}}
-    <link rel="stylesheet" href="{{ asset('game/TemplateData/style.css') }}">
-    <link rel="manifest" href="{{ asset('game/manifest.webmanifest') }}">
+    <link rel="stylesheet" href="{{ asset('game/TemplateData/style.css') }}?v={{ $gameVersion }}">
+    <link rel="manifest" href="{{ asset('game/manifest.webmanifest') }}?v={{ $gameVersion }}">
     <meta name="theme-color" content="#000000">
 
     {{-- iPhone / iPad support --}}
-    <link rel="apple-touch-icon" href="{{ asset('game/icon-192.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('game/icon-192.png') }}?v={{ $gameVersion }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+    {{-- Force remove old Unity/PWA cache once per version --}}
+    <script>
+        const BULLETDROP_VERSION = "{{ $gameVersion }}";
+
+        async function forceUpdateOldBulletDropCache() {
+            if (!("serviceWorker" in navigator)) return;
+
+            const savedVersion = localStorage.getItem("BulletDropVersion");
+
+            if (savedVersion !== BULLETDROP_VERSION) {
+                try {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+
+                    for (const registration of registrations) {
+                        await registration.unregister();
+                    }
+
+                    if ("caches" in window) {
+                        const cacheNames = await caches.keys();
+
+                        for (const name of cacheNames) {
+                            if (
+                                name.includes("BulletDrop") ||
+                                name.includes("PWA") ||
+                                name.includes("unity") ||
+                                name.includes("game")
+                            ) {
+                                await caches.delete(name);
+                            }
+                        }
+                    }
+
+                    localStorage.setItem("BulletDropVersion", BULLETDROP_VERSION);
+                    window.location.reload();
+                } catch (error) {
+                    console.warn("Cache cleanup failed:", error);
+                    localStorage.setItem("BulletDropVersion", BULLETDROP_VERSION);
+                }
+            }
+        }
+
+        forceUpdateOldBulletDropCache();
+    </script>
 
     {{-- Laravel to Unity Player Bridge --}}
     <script>
@@ -23,28 +75,26 @@
             $playerId = $player?->id ?: 'guest';
         @endphp
 
-        // Make functions globally available BEFORE Unity loads
         window.GetLaravelUserIdFromJS = function() {
             return '{{ $playerId }}';
         };
-        
+
         window.GetLaravelUsernameFromJS = function() {
             return '{{ addslashes($playerName) }}';
         };
-        
+
         window.GetPlayerNameFromJS = function() {
             return '{{ addslashes($playerName) }}';
         };
-        
+
         window.GetLaravelUserId = function() {
             return window.GetLaravelUserIdFromJS();
         };
-        
+
         window.GetLaravelUsername = function() {
             return window.GetLaravelUsernameFromJS();
         };
 
-        // Store in localStorage for persistence
         localStorage.setItem("player_id", '{{ $playerId }}');
         localStorage.setItem("player_name", '{{ addslashes($playerName) }}');
         localStorage.setItem("player_username", '{{ addslashes($playerName) }}');
@@ -58,8 +108,6 @@
         };
 
         console.log("LaravelPlayer Loaded:", window.LaravelPlayer);
-        console.log("GetLaravelUsernameFromJS:", window.GetLaravelUsernameFromJS());
-        console.log("GetLaravelUserIdFromJS:", window.GetLaravelUserIdFromJS());
     </script>
 
     <div class="py-12 bg-black min-h-screen flex flex-col items-center justify-center">
@@ -82,11 +130,11 @@
         Loading...
     </div>
 
-    <div id="network-status" style="position: fixed; top: 12px; right: 12px; z-index: 10000; background: rgba(0,0,0,0.82); color: #ffd700; border: 1px solid rgba(255,215,0,0.45); border-radius: 4px; padding: 7px 12px; font-size: 12px; font-weight: 700; letter-spacing: 0; text-transform: uppercase; pointer-events: none;" hidden>
+    <div id="network-status" style="position: fixed; top: 12px; right: 12px; z-index: 10000; background: rgba(0,0,0,0.82); color: #ffd700; border: 1px solid rgba(255,215,0,0.45); border-radius: 4px; padding: 7px 12px; font-size: 12px; font-weight: 700; text-transform: uppercase; pointer-events: none;" hidden>
         Offline
     </div>
 
-    {{-- Correct PWA + Firebase Service Workers --}}
+    {{-- PWA + Firebase Service Workers --}}
     <script>
         window.IsBulletDropOnlineFromJS = function () {
             return navigator.onLine ? "1" : "0";
@@ -98,9 +146,7 @@
 
         function updateNetworkStatusBadge() {
             var networkStatus = document.getElementById("network-status");
-            if (!networkStatus) {
-                return;
-            }
+            if (!networkStatus) return;
 
             networkStatus.textContent = navigator.onLine ? "Online" : "Offline";
             networkStatus.hidden = navigator.onLine;
@@ -112,7 +158,7 @@
 
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", async function () {
-                navigator.serviceWorker.register("/ServiceWorker.js", {
+                navigator.serviceWorker.register("/ServiceWorker.js?v={{ $gameVersion }}", {
                     scope: "/"
                 }).then(function (registration) {
                     console.log("PWA Service Worker Registered:", registration.scope);
@@ -171,9 +217,7 @@
         }
 
         function loadFirebaseNotifications() {
-            if (!navigator.onLine || window.firebaseNotificationsLoaded) {
-                return;
-            }
+            if (!navigator.onLine || window.firebaseNotificationsLoaded) return;
 
             window.firebaseNotificationsLoaded = true;
 
@@ -182,7 +226,7 @@
                     return loadScript("https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js");
                 })
                 .then(function () {
-                    return loadScript("{{ asset('game/firebase-notification.js') }}");
+                    return loadScript("{{ asset('game/firebase-notification.js') }}?v={{ $gameVersion }}");
                 })
                 .catch(function (error) {
                     window.firebaseNotificationsLoaded = false;
@@ -230,17 +274,17 @@
             updateBannerVisibility();
         }
 
-        // Update debug panel with user info
         function updateDebugPanel() {
             if (debugPanel) {
-                var userId = window.GetLaravelUserIdFromJS ? window.GetLaravelUserIdFromJS() : 'unknown';
-                var username = window.GetLaravelUsernameFromJS ? window.GetLaravelUsernameFromJS() : 'unknown';
-                debugPanel.innerHTML = `👤 User: ${username}<br>🆔 ID: ${userId}<br>🎮 Unity: Loading...`;
+                var userId = window.GetLaravelUserIdFromJS ? window.GetLaravelUserIdFromJS() : "unknown";
+                var username = window.GetLaravelUsernameFromJS ? window.GetLaravelUsernameFromJS() : "unknown";
+                debugPanel.innerHTML = `👤 User: ${username}<br>🆔 ID: ${userId}<br>🎮 Unity: Loading...<br>🧩 Version: {{ $gameVersion }}`;
             }
         }
+
         updateDebugPanel();
 
-        var gameVersion = "{{ time() }}";
+        var gameVersion = "{{ $gameVersion }}";
         var buildUrl = "{{ asset('game/Build') }}";
         var loaderUrl = buildUrl + "/BulletDrop.loader.js?v=" + gameVersion;
 
@@ -251,18 +295,7 @@
             streamingAssetsUrl: "{{ asset('game/StreamingAssets') }}",
             companyName: "Ariatyx Gaming",
             productName: "BulletDrop",
-            productVersion: "1.0." + gameVersion,
-            showBanner: unityShowBanner
-        };
-
-        var config = {
-            dataUrl: buildUrl + "/BulletDrop.data",
-            frameworkUrl: buildUrl + "/BulletDrop.framework.js",
-            codeUrl: buildUrl + "/BulletDrop.wasm",
-            streamingAssetsUrl: "{{ asset('game/StreamingAssets') }}",
-            companyName: "Ariatyx Gaming",
-            productName: "BulletDrop",
-            productVersion: "1.0",
+            productVersion: gameVersion,
             showBanner: unityShowBanner
         };
 
@@ -287,21 +320,23 @@
             }).then(function (unityInstance) {
                 window.unityInstance = unityInstance;
                 loadingBar.style.display = "none";
-                console.log("Unity loaded successfully");
-                
+
                 if (debugPanel) {
-                    var userId = window.GetLaravelUserIdFromJS ? window.GetLaravelUserIdFromJS() : 'unknown';
-                    var username = window.GetLaravelUsernameFromJS ? window.GetLaravelUsernameFromJS() : 'unknown';
-                    debugPanel.innerHTML = `👤 User: ${username}<br>🆔 ID: ${userId}<br>🎮 Unity: Loaded ✓`;
+                    var userId = window.GetLaravelUserIdFromJS ? window.GetLaravelUserIdFromJS() : "unknown";
+                    var username = window.GetLaravelUsernameFromJS ? window.GetLaravelUsernameFromJS() : "unknown";
+                    debugPanel.innerHTML = `👤 User: ${username}<br>🆔 ID: ${userId}<br>🎮 Unity: Loaded ✓<br>🧩 Version: {{ $gameVersion }}`;
+
                     setTimeout(function() {
-                        debugPanel.style.opacity = '0.5';
+                        debugPanel.style.opacity = "0.5";
                     }, 5000);
                 }
             }).catch(function (message) {
                 console.error(message);
+
                 if (debugPanel) {
                     debugPanel.innerHTML += `<br>❌ Error: ${message.substring(0, 50)}`;
                 }
+
                 alert(message);
             });
         };
@@ -309,9 +344,11 @@
         script.onerror = function () {
             var errorMsg = "Failed to load Unity loader. Check Build file names.";
             console.error(errorMsg);
+
             if (debugPanel) {
                 debugPanel.innerHTML += `<br>❌ ${errorMsg}`;
             }
+
             alert(errorMsg);
         };
 
