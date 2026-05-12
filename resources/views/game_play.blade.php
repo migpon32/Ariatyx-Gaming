@@ -6,7 +6,7 @@
     </x-slot>
 
     @php
-        $gameVersion = 'v202';
+        $gameVersion = 'v203';
         $player = auth()->user();
         $playerName = trim((string) ($player?->username ?: $player?->name ?: $player?->email ?: 'Player'));
         $playerId = $player?->id ?: 'guest';
@@ -103,12 +103,13 @@
         };
 
         localStorage.setItem("player_id", @json((string) $playerId));
+        localStorage.setItem("laravel_user_id", @json((string) $playerId));
         localStorage.setItem("player_name", @json($playerName));
         localStorage.setItem("player_username", @json($playerName));
         localStorage.setItem("player_last_synced_at", new Date().toISOString());
 
         window.LaravelPlayer = {
-            id: localStorage.getItem("player_id") || "guest",
+            id: localStorage.getItem("laravel_user_id") || localStorage.getItem("player_id") || "guest",
             username: localStorage.getItem("player_username") || localStorage.getItem("player_name") || "Player",
             name: localStorage.getItem("player_name") || localStorage.getItem("player_username") || "Player",
             isLoggedIn: {{ $player ? 'true' : 'false' }}
@@ -204,13 +205,45 @@
 
     {{-- Unity Exit Button Bridge --}}
     <script>
-        function ExitToLauncher() {
-            window.location.href = "{{ route('game.play') }}";
+        window.BulletDropLauncherUrl = @json(route('launcher'));
+
+        function isBulletDropStandalonePwa() {
+            return window.matchMedia("(display-mode: standalone)").matches ||
+                window.matchMedia("(display-mode: fullscreen)").matches ||
+                window.navigator.standalone === true;
         }
 
-        function ExitGame() {
-            ExitToLauncher();
+        function navigateToLauncher() {
+            window.location.assign(window.BulletDropLauncherUrl);
         }
+
+        window.ExitToLauncher = function () {
+            navigateToLauncher();
+        };
+
+        window.ExitGame = function () {
+            if (!isBulletDropStandalonePwa()) {
+                navigateToLauncher();
+                return;
+            }
+
+            var fallbackTimer = window.setTimeout(navigateToLauncher, 250);
+
+            try {
+                window.open("", "_self");
+                window.close();
+            } catch (error) {
+                console.warn("Window close was blocked. Returning to launcher.", error);
+            }
+
+            window.setTimeout(function () {
+                window.clearTimeout(fallbackTimer);
+
+                if (!document.hidden) {
+                    navigateToLauncher();
+                }
+            }, 350);
+        };
     </script>
 
     {{-- Firebase Scripts --}}

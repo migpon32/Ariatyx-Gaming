@@ -94,7 +94,7 @@
 
     <div class="launcher-wrapper" id="launcherBody">
         <div class="game-container">
-            <a href="{{ route('game.play') }}" class="block">
+            <a href="{{ route('launcher') }}" class="block">
     <div class="game-card active" data-bg="{{ asset('images/bulletdropnologo.png') }}">
         <img src="{{ asset('images/bulletdropwlogo.png') }}" alt="Bullet Drop">
         <div class="overlay">

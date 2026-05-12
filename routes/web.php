@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     if (Auth::check()) {
-        return redirect()->route('game.play');
+        return redirect()->route('dashboard');
     }
 
     return view('welcome');
@@ -17,7 +17,7 @@ Route::get('/leaderboard', function () {
 })->name('leaderboard');
 
 Route::get('/dashboard', function () {
-    return redirect()->route('game.play');
+    return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/game-play', function () {
@@ -37,7 +37,7 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/launcher', function () {
-        return redirect()->route('game.play');
+        return view('launcher');
     })->name('launcher');
 });
 

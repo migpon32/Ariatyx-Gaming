@@ -1,9 +1,11 @@
-const gameVersion = new URL(self.location.href).searchParams.get("v") || "v202";
+const gameVersion = new URL(self.location.href).searchParams.get("v") || "v203";
 const cacheName = "BulletDrop-PWA-" + gameVersion;
 const versionQuery = "?v=" + gameVersion;
 
 const cacheableShellAssets = [
     "/game-play",
+    "/launcher",
+    "/dashboard",
     "/game/manifest.webmanifest",
     "/game/manifest.webmanifest" + versionQuery,
     "/game/icon-192.png",
@@ -28,6 +30,12 @@ const cacheableShellPaths = new Set(
         return new URL(assetUrl, self.location.origin).pathname;
     })
 );
+
+const cacheableNavigationPaths = new Set([
+    "/game-play",
+    "/launcher",
+    "/dashboard"
+]);
 
 function isBulletDropCache(cacheKey) {
     const normalizedKey = cacheKey.toLowerCase();
@@ -63,15 +71,15 @@ function cacheResponse(cache, request, response) {
     });
 }
 
-function isGamePlayResponse(response) {
+function isExpectedNavigationResponse(response, expectedPathname) {
     if (!response || !response.ok) {
         return false;
     }
 
-    const responseUrl = new URL(response.url || "/game-play", self.location.origin);
+    const responseUrl = new URL(response.url || expectedPathname, self.location.origin);
 
     return responseUrl.origin === self.location.origin &&
-        responseUrl.pathname === "/game-play";
+        responseUrl.pathname === expectedPathname;
 }
 
 self.addEventListener("install", function (event) {
@@ -86,7 +94,13 @@ self.addEventListener("install", function (event) {
                         cache: "reload",
                         credentials: "same-origin"
                     }).then(function (response) {
-                        if (assetUrl === "/game-play" && !isGamePlayResponse(response)) return;
+                        if (
+                            cacheableNavigationPaths.has(assetUrl) &&
+                            !isExpectedNavigationResponse(response, assetUrl)
+                        ) {
+                            return;
+                        }
+
                         if (!response || !response.ok) return;
                         return cache.put(assetUrl, response);
                     }).catch(function (error) {
@@ -145,22 +159,22 @@ self.addEventListener("fetch", function (event) {
         return;
     }
 
-    if (isNavigation && requestUrl.pathname === "/game-play") {
+    if (isNavigation && cacheableNavigationPaths.has(requestUrl.pathname)) {
         event.respondWith(
             caches.open(cacheName).then(function (cache) {
                 return fetch(event.request, {
                     cache: "no-store",
                     credentials: "same-origin"
                 }).then(function (networkResponse) {
-                    if (isGamePlayResponse(networkResponse)) {
-                        return cacheResponse(cache, "/game-play", networkResponse);
+                    if (isExpectedNavigationResponse(networkResponse, requestUrl.pathname)) {
+                        return cacheResponse(cache, requestUrl.pathname, networkResponse);
                     }
 
                     return networkResponse;
                 }).catch(function () {
-                    return cache.match("/game-play").then(function (cachedResponse) {
+                    return cache.match(requestUrl.pathname).then(function (cachedResponse) {
                         return cachedResponse || new Response(
-                            "BulletDrop is unavailable offline until it has been opened once while online.",
+                            "BulletDrop is unavailable offline until this page has been opened once while online.",
                             {
                                 status: 503,
                                 headers: {
