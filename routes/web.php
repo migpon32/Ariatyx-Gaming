@@ -23,9 +23,10 @@ Route::get('/dashboard', function () {
 Route::get('/game-play', function () {
     return response()
         ->view('game_play')
-        ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0, private')
         ->header('Pragma', 'no-cache')
-        ->header('Expires', '0');
+        ->header('Expires', '0')
+        ->header('Surrogate-Control', 'no-store');
 })->middleware(['auth', 'verified'])->name('game.play');
 
 Route::middleware('auth')->group(function () {

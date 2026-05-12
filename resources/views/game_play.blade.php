@@ -6,7 +6,10 @@
     </x-slot>
 
     @php
-        $gameVersion = 'v201';
+        $gameVersion = 'v202';
+        $player = auth()->user();
+        $playerName = trim((string) ($player?->username ?: $player?->name ?: $player?->email ?: 'Player'));
+        $playerId = $player?->id ?: 'guest';
     @endphp
 
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -23,68 +26,72 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
 
-    {{-- Force remove old Unity/PWA cache once per version --}}
+    {{-- Force remove old BulletDrop cache once per version without touching Firebase SW --}}
     <script>
-        const BULLETDROP_VERSION = "{{ $gameVersion }}";
+        const BULLETDROP_VERSION = @json($gameVersion);
+        const BULLETDROP_VERSION_STORAGE_KEY = "BulletDropVersion";
 
-        async function forceUpdateOldBulletDropCache() {
-            if (!("serviceWorker" in navigator)) return;
+        async function cleanupOldBulletDropCaches() {
+            const savedVersion = localStorage.getItem(BULLETDROP_VERSION_STORAGE_KEY);
 
-            const savedVersion = localStorage.getItem("BulletDropVersion");
+            if (savedVersion === BULLETDROP_VERSION) {
+                return;
+            }
 
-            if (savedVersion !== BULLETDROP_VERSION) {
-                try {
-                    const registrations = await navigator.serviceWorker.getRegistrations();
+            const shouldReloadAfterCleanup = savedVersion !== null;
 
-                    for (const registration of registrations) {
-                        await registration.unregister();
-                    }
+            try {
+                if ("caches" in window) {
+                    const cacheNames = await caches.keys();
 
-                    if ("caches" in window) {
-                        const cacheNames = await caches.keys();
+                    await Promise.all(cacheNames.map(function (cacheName) {
+                        const normalizedName = cacheName.toLowerCase();
+                        const isFirebaseCache = normalizedName.includes("firebase");
+                        const isBulletDropCache =
+                            normalizedName.includes("bulletdrop") ||
+                            normalizedName.includes("unity") ||
+                            normalizedName.includes("game");
 
-                        for (const name of cacheNames) {
-                            if (
-                                name.includes("BulletDrop") ||
-                                name.includes("PWA") ||
-                                name.includes("unity") ||
-                                name.includes("game")
-                            ) {
-                                await caches.delete(name);
-                            }
+                        if (isBulletDropCache && !isFirebaseCache) {
+                            return caches.delete(cacheName);
                         }
-                    }
-
-                    localStorage.setItem("BulletDropVersion", BULLETDROP_VERSION);
-                    window.location.reload();
-                } catch (error) {
-                    console.warn("Cache cleanup failed:", error);
-                    localStorage.setItem("BulletDropVersion", BULLETDROP_VERSION);
+                    }));
                 }
+
+                if ("serviceWorker" in navigator) {
+                    const registration = await navigator.serviceWorker.getRegistration("/");
+
+                    if (registration && registration.update) {
+                        await registration.update();
+                    }
+                }
+
+                localStorage.setItem(BULLETDROP_VERSION_STORAGE_KEY, BULLETDROP_VERSION);
+
+                if (shouldReloadAfterCleanup) {
+                    window.location.reload();
+                }
+            } catch (error) {
+                console.warn("BulletDrop cache cleanup failed:", error);
+                localStorage.setItem(BULLETDROP_VERSION_STORAGE_KEY, BULLETDROP_VERSION);
             }
         }
 
-        forceUpdateOldBulletDropCache();
+        cleanupOldBulletDropCaches();
     </script>
 
     {{-- Laravel to Unity Player Bridge --}}
     <script>
-        @php
-            $player = auth()->user();
-            $playerName = trim((string) ($player?->username ?: $player?->name ?: $player?->email ?: 'Player'));
-            $playerId = $player?->id ?: 'guest';
-        @endphp
-
         window.GetLaravelUserIdFromJS = function() {
-            return '{{ $playerId }}';
+            return @json((string) $playerId);
         };
 
         window.GetLaravelUsernameFromJS = function() {
-            return '{{ addslashes($playerName) }}';
+            return @json($playerName);
         };
 
         window.GetPlayerNameFromJS = function() {
-            return '{{ addslashes($playerName) }}';
+            return @json($playerName);
         };
 
         window.GetLaravelUserId = function() {
@@ -95,9 +102,9 @@
             return window.GetLaravelUsernameFromJS();
         };
 
-        localStorage.setItem("player_id", '{{ $playerId }}');
-        localStorage.setItem("player_name", '{{ addslashes($playerName) }}');
-        localStorage.setItem("player_username", '{{ addslashes($playerName) }}');
+        localStorage.setItem("player_id", @json((string) $playerId));
+        localStorage.setItem("player_name", @json($playerName));
+        localStorage.setItem("player_username", @json($playerName));
         localStorage.setItem("player_last_synced_at", new Date().toISOString());
 
         window.LaravelPlayer = {
@@ -158,15 +165,20 @@
 
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", async function () {
-                navigator.serviceWorker.register("/ServiceWorker.js?v={{ $gameVersion }}", {
+                navigator.serviceWorker.register("/ServiceWorker.js?v=" + BULLETDROP_VERSION, {
                     scope: "/"
                 }).then(function (registration) {
                     console.log("PWA Service Worker Registered:", registration.scope);
+                    return registration.update();
                 }).catch(function (error) {
                     console.error("PWA Service Worker Error:", error);
                 });
 
                 registerFirebaseServiceWorker();
+            });
+
+            navigator.serviceWorker.addEventListener("controllerchange", function () {
+                console.log("PWA Service Worker controller changed.");
             });
 
             window.addEventListener("online", registerFirebaseServiceWorker);
@@ -274,28 +286,35 @@
             updateBannerVisibility();
         }
 
+        function getDebugHtml(unityStatus) {
+            var userId = window.GetLaravelUserIdFromJS ? window.GetLaravelUserIdFromJS() : "unknown";
+            var username = window.GetLaravelUsernameFromJS ? window.GetLaravelUsernameFromJS() : "unknown";
+
+            return "User: " + username +
+                "<br>ID: " + userId +
+                "<br>Unity: " + unityStatus +
+                "<br>Version: " + BULLETDROP_VERSION;
+        }
+
         function updateDebugPanel() {
             if (debugPanel) {
-                var userId = window.GetLaravelUserIdFromJS ? window.GetLaravelUserIdFromJS() : "unknown";
-                var username = window.GetLaravelUsernameFromJS ? window.GetLaravelUsernameFromJS() : "unknown";
-                debugPanel.innerHTML = `👤 User: ${username}<br>🆔 ID: ${userId}<br>🎮 Unity: Loading...<br>🧩 Version: {{ $gameVersion }}`;
+                debugPanel.innerHTML = getDebugHtml("Loading...");
             }
         }
 
         updateDebugPanel();
 
-        var gameVersion = "{{ $gameVersion }}";
         var buildUrl = "{{ asset('game/Build') }}";
-        var loaderUrl = buildUrl + "/BulletDrop.loader.js?v=" + gameVersion;
+        var loaderUrl = buildUrl + "/BulletDrop.loader.js?v=" + BULLETDROP_VERSION;
 
         var config = {
-            dataUrl: buildUrl + "/BulletDrop.data?v=" + gameVersion,
-            frameworkUrl: buildUrl + "/BulletDrop.framework.js?v=" + gameVersion,
-            codeUrl: buildUrl + "/BulletDrop.wasm?v=" + gameVersion,
+            dataUrl: buildUrl + "/BulletDrop.data?v=" + BULLETDROP_VERSION,
+            frameworkUrl: buildUrl + "/BulletDrop.framework.js?v=" + BULLETDROP_VERSION,
+            codeUrl: buildUrl + "/BulletDrop.wasm?v=" + BULLETDROP_VERSION,
             streamingAssetsUrl: "{{ asset('game/StreamingAssets') }}",
             companyName: "Ariatyx Gaming",
             productName: "BulletDrop",
-            productVersion: gameVersion,
+            productVersion: BULLETDROP_VERSION,
             showBanner: unityShowBanner
         };
 
@@ -322,9 +341,7 @@
                 loadingBar.style.display = "none";
 
                 if (debugPanel) {
-                    var userId = window.GetLaravelUserIdFromJS ? window.GetLaravelUserIdFromJS() : "unknown";
-                    var username = window.GetLaravelUsernameFromJS ? window.GetLaravelUsernameFromJS() : "unknown";
-                    debugPanel.innerHTML = `👤 User: ${username}<br>🆔 ID: ${userId}<br>🎮 Unity: Loaded ✓<br>🧩 Version: {{ $gameVersion }}`;
+                    debugPanel.innerHTML = getDebugHtml("Loaded");
 
                     setTimeout(function() {
                         debugPanel.style.opacity = "0.5";
@@ -334,7 +351,7 @@
                 console.error(message);
 
                 if (debugPanel) {
-                    debugPanel.innerHTML += `<br>❌ Error: ${message.substring(0, 50)}`;
+                    debugPanel.innerHTML += "<br>Error: " + String(message).substring(0, 80);
                 }
 
                 alert(message);
@@ -346,7 +363,7 @@
             console.error(errorMsg);
 
             if (debugPanel) {
-                debugPanel.innerHTML += `<br>❌ ${errorMsg}`;
+                debugPanel.innerHTML += "<br>" + errorMsg;
             }
 
             alert(errorMsg);
