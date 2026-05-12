@@ -240,8 +240,20 @@
         }
         updateDebugPanel();
 
+        var gameVersion = "{{ time() }}";
         var buildUrl = "{{ asset('game/Build') }}";
-        var loaderUrl = buildUrl + "/BulletDrop.loader.js";
+        var loaderUrl = buildUrl + "/BulletDrop.loader.js?v=" + gameVersion;
+
+        var config = {
+            dataUrl: buildUrl + "/BulletDrop.data?v=" + gameVersion,
+            frameworkUrl: buildUrl + "/BulletDrop.framework.js?v=" + gameVersion,
+            codeUrl: buildUrl + "/BulletDrop.wasm?v=" + gameVersion,
+            streamingAssetsUrl: "{{ asset('game/StreamingAssets') }}",
+            companyName: "Ariatyx Gaming",
+            productName: "BulletDrop",
+            productVersion: "1.0." + gameVersion,
+            showBanner: unityShowBanner
+        };
 
         var config = {
             dataUrl: buildUrl + "/BulletDrop.data",
