@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     if (Auth::check()) {
-        return redirect()->route('dashboard');
+        return redirect()->route('game.play');
     }
 
     return view('welcome');
@@ -17,7 +17,7 @@ Route::get('/leaderboard', function () {
 })->name('leaderboard');
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    return redirect()->route('game.play');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/game-play', function () {
@@ -27,7 +27,7 @@ Route::get('/game-play', function () {
         ->header('Pragma', 'no-cache')
         ->header('Expires', '0')
         ->header('Surrogate-Control', 'no-store');
-})->middleware(['auth', 'verified'])->name('game.play');
+})->name('game.play');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -37,7 +37,7 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/launcher', function () {
-        return view('launcher');
+        return redirect()->route('game.play');
     })->name('launcher');
 });
 

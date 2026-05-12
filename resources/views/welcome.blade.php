@@ -33,7 +33,7 @@
         <div class="flex items-center gap-6">
             @if (Route::has('login'))
                 @auth
-                    <a href="{{ url('/dashboard') }}" class="text-xs font-bold uppercase tracking-widest hover:text-red-500">Dashboard</a>
+                    <a href="{{ route('game.play') }}" class="text-xs font-bold uppercase tracking-widest hover:text-red-500">Play BulletDrop</a>
                 @else
                     <a href="{{ route('login') }}" class="text-xs font-bold uppercase tracking-widest hover:text-red-500">Sign In</a>
                     @if (Route::has('register'))
@@ -80,7 +80,7 @@
         <h2 class="text-4xl font-black uppercase italic mb-12">Our Game</h2>
         
         <div class="flex justify-center">
-            <a href="{{ Auth::check() ? route('dashboard') : route('login') }}" class="group cursor-pointer w-full max-w-sm block">
+            <a href="{{ Auth::check() ? route('game.play') : route('login') }}" class="group cursor-pointer w-full max-w-sm block">
                 <div class="h-96 bg-[#111] mb-4 overflow-hidden relative shadow-xl border-b-4 border-transparent group-hover:border-red-600 transition-all">
                     <div class="absolute inset-0 bg-red-600 opacity-0 group-hover:opacity-20 transition"></div>
                     <div class="flex flex-col items-center justify-center h-full p-8">
@@ -88,7 +88,7 @@
                         <h3 class="text-white text-5xl font-black italic uppercase leading-none mb-4">BULLET<br>DROP</h3>
                         <div class="w-12 h-1 bg-white mb-4"></div>
                         <p class="text-gray-400 text-xs uppercase tracking-tighter">
-                            {{ Auth::check() ? 'Click to Open Dashboard' : 'Click to Sign In & Play' }}
+                            {{ Auth::check() ? 'Click to Play' : 'Click to Sign In & Play' }}
                         </p>
                     </div>
                 </div>

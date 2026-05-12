@@ -283,12 +283,12 @@
     <div class="hero-bg"></div>
     <div class="scanlines"></div>
 
-    <a href="{{ route('dashboard') }}" class="branding-container">
+    <a href="{{ route('game.play') }}" class="branding-container">
         <img src="{{ asset('images/logo.png') }}" alt="Ariatyx Logo" class="studio-logo">
         <span class="studio-name">ARIATYX GAMES</span>
     </a>
     
-    <button class="back-button" onclick="window.location.href='{{ route('dashboard') }}'">
+    <button class="back-button" onclick="window.location.href='{{ route('game.play') }}'">
         Exit Launcher
     </button>
 

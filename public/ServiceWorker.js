@@ -3,13 +3,24 @@ const cacheName = "BulletDrop-PWA-" + gameVersion;
 const versionQuery = "?v=" + gameVersion;
 
 const cacheableShellAssets = [
+    "/game-play",
+    "/game/manifest.webmanifest",
     "/game/manifest.webmanifest" + versionQuery,
+    "/game/icon-192.png",
     "/game/icon-192.png" + versionQuery,
+    "/game/icon-512.png",
     "/game/icon-512.png" + versionQuery,
+    "/images/War_Bird.png",
     "/game/TemplateData/style.css" + versionQuery,
     "/game/TemplateData/unity-logo-dark.png",
     "/game/TemplateData/progress-bar-empty-dark.png",
-    "/game/TemplateData/progress-bar-full-dark.png"
+    "/game/TemplateData/progress-bar-full-dark.png",
+    "/build/assets/app-CBIXHEl1.css",
+    "/build/assets/app-BdKX2mS3.js",
+    "/game/Build/BulletDrop.loader.js" + versionQuery,
+    "/game/Build/BulletDrop.data" + versionQuery,
+    "/game/Build/BulletDrop.framework.js" + versionQuery,
+    "/game/Build/BulletDrop.wasm" + versionQuery
 ];
 
 const cacheableShellPaths = new Set(
@@ -36,6 +47,33 @@ function isUnityBuildFile(pathname) {
         pathname.endsWith(".loader.js");
 }
 
+function isLocalStaticAsset(pathname) {
+    return pathname.startsWith("/build/assets/") ||
+        pathname.startsWith("/game/TemplateData/") ||
+        pathname.startsWith("/images/");
+}
+
+function cacheResponse(cache, request, response) {
+    if (!response || !response.ok) {
+        return Promise.resolve(response);
+    }
+
+    return cache.put(request, response.clone()).then(function () {
+        return response;
+    });
+}
+
+function isGamePlayResponse(response) {
+    if (!response || !response.ok) {
+        return false;
+    }
+
+    const responseUrl = new URL(response.url || "/game-play", self.location.origin);
+
+    return responseUrl.origin === self.location.origin &&
+        responseUrl.pathname === "/game-play";
+}
+
 self.addEventListener("install", function (event) {
     console.log("[Service Worker] Installing BulletDrop version:", gameVersion);
     self.skipWaiting();
@@ -48,6 +86,7 @@ self.addEventListener("install", function (event) {
                         cache: "reload",
                         credentials: "same-origin"
                     }).then(function (response) {
+                        if (assetUrl === "/game-play" && !isGamePlayResponse(response)) return;
                         if (!response || !response.ok) return;
                         return cache.put(assetUrl, response);
                     }).catch(function (error) {
@@ -95,13 +134,8 @@ self.addEventListener("fetch", function (event) {
 
     const acceptHeader = event.request.headers.get("accept") || "";
     const isNavigation = event.request.mode === "navigate" || acceptHeader.includes("text/html");
-    const shouldNeverCache =
-        isNavigation ||
-        requestUrl.pathname === "/game-play" ||
-        requestUrl.pathname === "/ServiceWorker.js" ||
-        isUnityBuildFile(requestUrl.pathname);
 
-    if (shouldNeverCache) {
+    if (requestUrl.pathname === "/ServiceWorker.js") {
         event.respondWith(
             fetch(event.request, {
                 cache: "no-store",
@@ -111,27 +145,61 @@ self.addEventListener("fetch", function (event) {
         return;
     }
 
-    if (!cacheableShellPaths.has(requestUrl.pathname)) {
+    if (isNavigation && requestUrl.pathname === "/game-play") {
+        event.respondWith(
+            caches.open(cacheName).then(function (cache) {
+                return fetch(event.request, {
+                    cache: "no-store",
+                    credentials: "same-origin"
+                }).then(function (networkResponse) {
+                    if (isGamePlayResponse(networkResponse)) {
+                        return cacheResponse(cache, "/game-play", networkResponse);
+                    }
+
+                    return networkResponse;
+                }).catch(function () {
+                    return cache.match("/game-play").then(function (cachedResponse) {
+                        return cachedResponse || new Response(
+                            "BulletDrop is unavailable offline until it has been opened once while online.",
+                            {
+                                status: 503,
+                                headers: {
+                                    "Content-Type": "text/plain; charset=utf-8"
+                                }
+                            }
+                        );
+                    });
+                });
+            })
+        );
         return;
     }
 
-    event.respondWith(
-        caches.match(event.request).then(function (cachedResponse) {
-            if (cachedResponse) return cachedResponse;
+    if (isNavigation) {
+        return;
+    }
 
-            return fetch(event.request, {
-                cache: "reload",
-                credentials: "same-origin"
-            }).then(function (networkResponse) {
-                if (!networkResponse || !networkResponse.ok) {
-                    return networkResponse;
-                }
+    if (
+        isUnityBuildFile(requestUrl.pathname) ||
+        isLocalStaticAsset(requestUrl.pathname) ||
+        cacheableShellPaths.has(requestUrl.pathname)
+    ) {
+        event.respondWith(
+            caches.open(cacheName).then(function (cache) {
+                return cache.match(event.request, {
+                    ignoreSearch: true
+                }).then(function (cachedResponse) {
+                    if (cachedResponse) return cachedResponse;
 
-                return caches.open(cacheName).then(function (cache) {
-                    cache.put(event.request, networkResponse.clone());
-                    return networkResponse;
+                    return fetch(event.request, {
+                        cache: "reload",
+                        credentials: "same-origin"
+                    }).then(function (networkResponse) {
+                        return cacheResponse(cache, event.request, networkResponse);
+                    });
                 });
-            });
-        })
-    );
+            })
+        );
+        return;
+    }
 });

@@ -205,7 +205,7 @@
     {{-- Unity Exit Button Bridge --}}
     <script>
         function ExitToLauncher() {
-            window.location.href = "{{ route('launcher') }}";
+            window.location.href = "{{ route('game.play') }}";
         }
 
         function ExitGame() {
