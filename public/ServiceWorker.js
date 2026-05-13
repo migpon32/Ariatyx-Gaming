@@ -1,4 +1,4 @@
-const gameVersion = new URL(self.location.href).searchParams.get("v") || "v204";
+const gameVersion = new URL(self.location.href).searchParams.get("v") || "v205";
 const cacheName = "BulletDrop-PWA-" + gameVersion;
 const versionQuery = "?v=" + gameVersion;
 

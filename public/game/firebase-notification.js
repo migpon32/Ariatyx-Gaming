@@ -2,6 +2,7 @@ if (typeof firebase === "undefined") {
     console.warn("Firebase is unavailable. Notifications are disabled while offline.");
     window.RequestFirebaseNotificationPermission = async function () {
         window.FirebaseNotificationPermissionRequestedEarly = true;
+        window.FirebaseNotificationPermissionNeedsTap = true;
         return null;
     };
 } else {
@@ -47,6 +48,7 @@ if (typeof firebase === "undefined") {
 
     async function saveFirebaseToken(token) {
         localStorage.setItem("firebase_token", token);
+        localStorage.setItem("firebase_token_updated_at", new Date().toISOString());
 
         if (!window.FirebaseTokenStoreUrl) {
             return;
@@ -92,6 +94,7 @@ if (typeof firebase === "undefined") {
                 return null;
             }
 
+            window.FirebaseNotificationPermissionNeedsTap = false;
             const registration = await getFirebaseMessagingRegistration();
             const token = await messaging.getToken({
                 vapidKey: firebaseVapidKey,
@@ -113,6 +116,59 @@ if (typeof firebase === "undefined") {
         }
     }
 
+    function requestNotificationOnNextUserTap() {
+        if (window.FirebaseNotificationTapListenerInstalled || !("Notification" in window)) {
+            return;
+        }
+
+        if (Notification.permission !== "default") {
+            return;
+        }
+
+        window.FirebaseNotificationTapListenerInstalled = true;
+
+        const requestFromTap = function () {
+            window.FirebaseNotificationTapListenerInstalled = false;
+            window.FirebaseNotificationPermissionNeedsTap = false;
+            removeTapListeners();
+            RequestFirebaseNotificationPermission();
+        };
+
+        const removeTapListeners = function () {
+            window.removeEventListener("pointerdown", requestFromTap, true);
+            window.removeEventListener("touchend", requestFromTap, true);
+            window.removeEventListener("click", requestFromTap, true);
+        };
+
+        window.addEventListener("pointerdown", requestFromTap, true);
+        window.addEventListener("touchend", requestFromTap, true);
+        window.addEventListener("click", requestFromTap, true);
+    }
+
+    async function showForegroundNotification(payload) {
+        const notification = payload.notification || {};
+        const data = payload.data || {};
+        const title = notification.title || data.title || "Ariatyx Gaming";
+        const body = notification.body || data.body || "You have a new notification.";
+        const options = {
+            body: body,
+            icon: notification.icon || "/game/icon-192.png",
+            badge: "/game/icon-192.png",
+            data: {
+                url: data.url || "/launcher",
+                ...data
+            }
+        };
+
+        const registration = await getFirebaseMessagingRegistration();
+
+        if (registration && registration.showNotification) {
+            return registration.showNotification(title, options);
+        }
+
+        return new Notification(title, options);
+    }
+
     messaging.onMessage(function (payload) {
         console.log("Foreground Firebase Message:", payload);
 
@@ -120,15 +176,8 @@ if (typeof firebase === "undefined") {
             return;
         }
 
-        const notification = payload.notification || {};
-        const title = notification.title || payload.data?.title || "Ariatyx Gaming";
-        const body = notification.body || payload.data?.body || "You have a new notification.";
-
-        new Notification(title, {
-            body: body,
-            icon: notification.icon || "/game/icon-192.png",
-            badge: "/game/icon-192.png",
-            data: payload.data || {}
+        showForegroundNotification(payload).catch(function (error) {
+            console.error("Foreground notification display failed:", error);
         });
     });
 
@@ -136,8 +185,10 @@ if (typeof firebase === "undefined") {
 
     if (
         "Notification" in window &&
-        (window.FirebaseNotificationPermissionRequestedEarly || Notification.permission === "granted")
+        Notification.permission === "granted"
     ) {
         RequestFirebaseNotificationPermission();
+    } else if (window.FirebaseNotificationPermissionRequestedEarly || window.FirebaseNotificationPermissionNeedsTap) {
+        requestNotificationOnNextUserTap();
     }
 }

@@ -6,7 +6,7 @@
     </x-slot>
 
     @php
-        $gameVersion = 'v204';
+        $gameVersion = 'v205';
         $player = auth()->user();
         $playerName = trim((string) ($player?->username ?: $player?->name ?: $player?->email ?: 'Player'));
         $playerId = $player?->id ?: 'guest';
@@ -265,6 +265,7 @@
         window.FirebaseNotificationPermissionRequestedEarly = false;
         window.RequestFirebaseNotificationPermission = window.RequestFirebaseNotificationPermission || async function () {
             window.FirebaseNotificationPermissionRequestedEarly = true;
+            window.FirebaseNotificationPermissionNeedsTap = true;
             return null;
         };
 
@@ -297,6 +298,7 @@
                 });
         }
 
+        loadFirebaseNotifications();
         window.addEventListener("load", loadFirebaseNotifications);
         window.addEventListener("online", loadFirebaseNotifications);
     </script>
