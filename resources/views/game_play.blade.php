@@ -6,7 +6,7 @@
     </x-slot>
 
     @php
-        $gameVersion = 'v203';
+        $gameVersion = 'v204';
         $player = auth()->user();
         $playerName = trim((string) ($player?->username ?: $player?->name ?: $player?->email ?: 'Player'));
         $playerId = $player?->id ?: 'guest';
@@ -186,21 +186,34 @@
         }
 
         function registerFirebaseServiceWorker() {
-            if (!navigator.onLine || !("serviceWorker" in navigator) || window.firebaseServiceWorkerRegistered) {
-                return;
+            if (!navigator.onLine || !("serviceWorker" in navigator)) {
+                return Promise.resolve(null);
             }
 
-            window.firebaseServiceWorkerRegistered = true;
+            if (window.firebaseMessagingServiceWorkerRegistration) {
+                return Promise.resolve(window.firebaseMessagingServiceWorkerRegistration);
+            }
 
-            navigator.serviceWorker.register("/firebase-messaging-sw.js", {
-                scope: "/firebase-cloud-messaging-push-scope"
+            if (window.firebaseMessagingServiceWorkerRegistrationPromise) {
+                return window.firebaseMessagingServiceWorkerRegistrationPromise;
+            }
+
+            window.firebaseMessagingServiceWorkerRegistrationPromise = navigator.serviceWorker.register("/firebase-messaging-sw.js", {
+                scope: "/firebase-cloud-messaging-push-scope/"
             }).then(function (registration) {
                 console.log("Firebase SW Registered:", registration.scope);
+                window.firebaseMessagingServiceWorkerRegistration = registration;
+                return registration;
             }).catch(function (error) {
-                window.firebaseServiceWorkerRegistered = false;
+                window.firebaseMessagingServiceWorkerRegistrationPromise = null;
                 console.error("Firebase SW Error:", error);
+                throw error;
             });
+
+            return window.firebaseMessagingServiceWorkerRegistrationPromise;
         }
+
+        window.GetFirebaseMessagingServiceWorkerRegistration = registerFirebaseServiceWorker;
     </script>
 
     {{-- Unity Exit Button Bridge --}}
@@ -248,7 +261,12 @@
 
     {{-- Firebase Scripts --}}
     <script>
-        window.RequestFirebaseNotificationPermission = window.RequestFirebaseNotificationPermission || async function () {};
+        window.FirebaseTokenStoreUrl = @json($player ? route('firebase.token.store') : null);
+        window.FirebaseNotificationPermissionRequestedEarly = false;
+        window.RequestFirebaseNotificationPermission = window.RequestFirebaseNotificationPermission || async function () {
+            window.FirebaseNotificationPermissionRequestedEarly = true;
+            return null;
+        };
 
         function loadScript(src) {
             return new Promise(function (resolve, reject) {
