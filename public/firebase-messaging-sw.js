@@ -22,17 +22,17 @@ messaging.onBackgroundMessage(function (payload) {
         body: notification.body || data.body || "You have a new BulletDrop notification.",
         icon: notification.icon || "/game/icon-192.png",
         badge: "/game/icon-192.png",
-        data: {
-            url: data.url || "/launcher",
-            ...data
-        }
+        data: Object.assign({
+            url: data.url || "/launcher"
+        }, data)
     });
 });
 
 self.addEventListener("notificationclick", function (event) {
     event.notification.close();
 
-    const targetUrl = new URL(event.notification.data?.url || "/launcher", self.location.origin).href;
+    const notificationData = event.notification.data || {};
+    const targetUrl = new URL(notificationData.url || "/launcher", self.location.origin).href;
 
     event.waitUntil(
         clients.matchAll({

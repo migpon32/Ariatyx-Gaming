@@ -154,10 +154,9 @@ if (typeof firebase === "undefined") {
             body: body,
             icon: notification.icon || "/game/icon-192.png",
             badge: "/game/icon-192.png",
-            data: {
-                url: data.url || "/launcher",
-                ...data
-            }
+            data: Object.assign({
+                url: data.url || "/launcher"
+            }, data)
         };
 
         const registration = await getFirebaseMessagingRegistration();
