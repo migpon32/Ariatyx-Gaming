@@ -6,7 +6,7 @@
     </x-slot>
 
     @php
-        $gameVersion = 'v205';
+        $gameVersion = 'v206';
         $player = auth()->user();
         $playerName = trim((string) ($player?->username ?: $player?->name ?: $player?->email ?: 'Player'));
         $playerId = $player?->id ?: 'guest';
