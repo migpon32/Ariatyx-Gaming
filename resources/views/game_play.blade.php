@@ -26,6 +26,138 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
 
+    {{-- Landscape-only mobile protection styles --}}
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            min-height: 100%;
+            margin: 0;
+            background: #000;
+        }
+
+        body {
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+        }
+
+        #unity-container {
+            width: min(100vw, 960px);
+            max-width: 100vw;
+            aspect-ratio: 16 / 10;
+        }
+
+        #unity-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+
+        #rotate-device-overlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2147483647;
+            background: #000;
+            color: #fff;
+            text-align: center;
+            padding: 24px;
+        }
+
+        #rotate-device-overlay.is-visible {
+            display: flex;
+        }
+
+        .rotate-device-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            max-width: 320px;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .rotate-phone-icon {
+            width: 72px;
+            height: 112px;
+            border: 5px solid #fff;
+            border-radius: 16px;
+            position: relative;
+            margin-bottom: 10px;
+            animation: bulletdrop-phone-rotate 1.6s ease-in-out infinite;
+        }
+
+        .rotate-phone-icon::before {
+            content: "";
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            width: 22px;
+            height: 4px;
+            border-radius: 999px;
+            background: #fff;
+            transform: translateX(-50%);
+        }
+
+        .rotate-phone-icon::after {
+            content: "";
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #fff;
+            transform: translateX(-50%);
+        }
+
+        #rotate-device-overlay h2 {
+            margin: 0;
+            font-size: 24px;
+            line-height: 1.2;
+            font-weight: 800;
+        }
+
+        #rotate-device-overlay p {
+            margin: 0;
+            font-size: 15px;
+            line-height: 1.45;
+            color: rgba(255, 255, 255, 0.78);
+        }
+
+        @keyframes bulletdrop-phone-rotate {
+            0%,
+            100% {
+                transform: rotate(0deg);
+            }
+
+            45%,
+            65% {
+                transform: rotate(90deg);
+            }
+        }
+
+        @media (max-width: 900px) {
+            #unity-container {
+                width: 100vw;
+                height: 100vh;
+                height: 100dvh;
+                aspect-ratio: auto;
+            }
+
+            #unity-canvas {
+                width: 100%;
+                height: 100%;
+            }
+        }
+    </style>
+
     {{-- Force remove old BulletDrop cache once per version without touching Firebase SW --}}
     <script>
         const BULLETDROP_VERSION = @json($gameVersion);
@@ -117,6 +249,15 @@
 
         console.log("LaravelPlayer Loaded:", window.LaravelPlayer);
     </script>
+
+    {{-- Landscape-only mobile protection overlay --}}
+    <div id="rotate-device-overlay" aria-hidden="true">
+        <div class="rotate-device-content" role="status" aria-live="polite">
+            <div class="rotate-phone-icon" aria-hidden="true"></div>
+            <h2>Please Rotate Your Device</h2>
+            <p>BulletDrop only supports landscape mode.</p>
+        </div>
+    </div>
 
     <div class="py-12 bg-black min-h-screen flex flex-col items-center justify-center">
         <div id="unity-container" class="unity-desktop">
@@ -301,6 +442,56 @@
         loadFirebaseNotifications();
         window.addEventListener("load", loadFirebaseNotifications);
         window.addEventListener("online", loadFirebaseNotifications);
+    </script>
+
+    {{-- Landscape-only mobile protection logic --}}
+    <script>
+        (function () {
+            var overlay = document.getElementById("rotate-device-overlay");
+            var unityContainer = document.getElementById("unity-container");
+            var htmlElement = document.documentElement;
+            var bodyElement = document.body;
+            var wasBlockingGame = false;
+
+            function isBulletDropMobileDevice() {
+                var userAgent = navigator.userAgent || navigator.vendor || window.opera || "";
+                var isTouchMac = navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent) || isTouchMac;
+            }
+
+            function isBulletDropPortrait() {
+                return window.innerHeight > window.innerWidth;
+            }
+
+            function updateBulletDropOrientationProtection() {
+                if (!overlay || !unityContainer) {
+                    return;
+                }
+
+                var shouldBlockGame = isBulletDropMobileDevice() && isBulletDropPortrait();
+
+                overlay.classList.toggle("is-visible", shouldBlockGame);
+                overlay.setAttribute("aria-hidden", shouldBlockGame ? "false" : "true");
+                unityContainer.style.display = shouldBlockGame ? "none" : "";
+                htmlElement.style.overflow = shouldBlockGame ? "hidden" : "";
+                bodyElement.style.overflow = shouldBlockGame ? "hidden" : "";
+
+                if (wasBlockingGame && !shouldBlockGame) {
+                    window.setTimeout(function () {
+                        window.dispatchEvent(new Event("resize"));
+                    }, 100);
+                }
+
+                wasBlockingGame = shouldBlockGame;
+            }
+
+            window.UpdateBulletDropOrientationProtection = updateBulletDropOrientationProtection;
+            window.addEventListener("resize", updateBulletDropOrientationProtection);
+            window.addEventListener("orientationchange", updateBulletDropOrientationProtection);
+            window.addEventListener("load", updateBulletDropOrientationProtection);
+            updateBulletDropOrientationProtection();
+        })();
     </script>
 
     {{-- Unity WebGL Loader --}}
