@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             '2fa.enabled' => \App\Http\Middleware\EnsureTwoFactorIsEnabled::class,
             '2fa.verified' => \App\Http\Middleware\EnsureTwoFactorIsVerified::class,
+            'api.2fa.complete' => \App\Http\Middleware\EnsureApiTokenHasCompletedTwoFactor::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -33,18 +33,21 @@ class TwoFactorAuthenticationService
 
     public function qrCodeSvg(User $user): string
     {
-        $url = $this->google2fa->getQRCodeUrl(
-            config('app.name', 'Ariatyx Gaming'),
-            $user->email,
-            $user->two_factor_secret
-        );
-
         $renderer = new ImageRenderer(
             new RendererStyle(260, 2),
             new SvgImageBackEnd()
         );
 
-        return (new Writer($renderer))->writeString($url);
+        return (new Writer($renderer))->writeString($this->otpauthUrl($user));
+    }
+
+    public function otpauthUrl(User $user): string
+    {
+        return $this->google2fa->getQRCodeUrl(
+            config('app.name', 'Ariatyx Gaming'),
+            $user->email,
+            $user->two_factor_secret
+        );
     }
 
     public function verifyCode(User $user, string $code): bool
