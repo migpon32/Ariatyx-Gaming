@@ -110,7 +110,7 @@ def dashboard():
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
         <title>BulletDrop - Leaderboard Analytics</title>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&family=Oswald:wght@700&display=swap" rel="stylesheet">
         
         <style>
             * {
@@ -120,14 +120,14 @@ def dashboard():
             }
 
             body {
-                background: linear-gradient(135deg, #f5f7fa 0%, #eef2f7 100%);
-                font-family: 'Inter', 'Plus Jakarta Sans', sans-serif;
-                color: #1a1f2e;
+                background: linear-gradient(135deg, #f0f4f8 0%, #e8edf5 100%);
+                font-family: 'Barlow', sans-serif;
+                color: #1a1a2e;
                 min-height: 100vh;
                 overflow-x: auto;
             }
 
-            /* Soft background pattern */
+            /* Subtle gaming pattern */
             body::before {
                 content: '';
                 position: fixed;
@@ -135,9 +135,9 @@ def dashboard():
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
-                background-size: 40px 40px;
-                opacity: 0.3;
+                background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48cGF0aCBkPSJNMzAgMTBhMjAgMjAgMCAwIDEgMCA0MCAyMCAyMCAwIDAgMSAwLTQweiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZkYzAwIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1vcGFjaXR5PSIwLjA1Ii8+PC9zdmc+');
+                background-repeat: repeat;
+                opacity: 0.4;
                 pointer-events: none;
                 z-index: 0;
             }
@@ -150,7 +150,7 @@ def dashboard():
                 z-index: 1;
             }
 
-            /* Header with return button */
+            /* Header with gaming style */
             .header {
                 display: flex;
                 justify-content: space-between;
@@ -159,57 +159,59 @@ def dashboard():
                 gap: 20px;
                 margin-bottom: 40px;
                 padding: 20px 30px;
-                background: rgba(255, 255, 255, 0.8);
+                background: rgba(255, 255, 255, 0.9);
                 backdrop-filter: blur(20px);
-                border-radius: 24px;
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-                border: 1px solid rgba(255, 255, 255, 0.9);
+                border-radius: 16px;
+                border: 2px solid #FFD700;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
             }
 
             .title-section h1 {
-                font-family: 'Plus Jakarta Sans', sans-serif;
+                font-family: 'Barlow Condensed', sans-serif;
                 font-size: clamp(32px, 5vw, 48px);
-                font-weight: 800;
-                background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+                font-weight: 900;
+                text-transform: uppercase;
+                background: linear-gradient(135deg, #1a1a2e 0%, #FFD700 50%, #1a1a2e 100%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
-                letter-spacing: -0.5px;
+                letter-spacing: -1px;
             }
 
             .title-section p {
-                color: #64748b;
-                font-family: 'Inter', sans-serif;
-                font-size: 15px;
-                font-weight: 500;
-                margin-top: 8px;
+                color: #666;
+                font-family: 'Barlow Condensed', sans-serif;
+                font-size: 16px;
+                font-weight: 600;
             }
 
-            /* Return Button */
+            /* Return Button - Gaming style */
             .return-btn {
                 display: inline-flex;
                 align-items: center;
                 gap: 12px;
-                background: linear-gradient(135deg, #2563eb, #7c3aed);
-                border: none;
+                background: linear-gradient(135deg, #FFD700, #FFA500);
+                border: 2px solid #fff;
                 border-radius: 40px;
-                padding: 12px 32px;
-                color: white;
-                font-family: 'Inter', sans-serif;
-                font-size: 14px;
-                font-weight: 600;
+                padding: 10px 28px;
+                color: #1a1a2e;
+                font-family: 'Barlow Condensed', sans-serif;
+                font-size: 16px;
+                font-weight: 800;
+                text-transform: uppercase;
                 text-decoration: none;
-                letter-spacing: 0.5px;
+                letter-spacing: 1.5px;
                 cursor: pointer;
-                transition: all 0.3s ease;
-                box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+                transition: all 0.25s ease;
+                box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
             }
 
             .return-btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+                transform: translateY(-3px);
+                box-shadow: 0 8px 20px rgba(255, 215, 0, 0.5);
+                background: linear-gradient(135deg, #FFE44D, #FFB347);
             }
 
-            /* Stats Cards */
+            /* Stats Cards - Gaming style */
             .cards {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -219,35 +221,51 @@ def dashboard():
 
             .card {
                 background: white;
-                border-radius: 24px;
+                border-radius: 16px;
                 padding: 28px 24px;
                 text-align: center;
                 transition: all 0.3s ease;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-                border: 1px solid rgba(0, 0, 0, 0.05);
+                border: 2px solid #FFD700;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+                position: relative;
+                overflow: hidden;
+            }
+
+            .card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+                transition: left 0.5s ease;
+            }
+
+            .card:hover::before {
+                left: 100%;
             }
 
             .card:hover {
-                transform: translateY(-4px);
-                box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-                border-color: rgba(37, 99, 235, 0.2);
+                transform: translateY(-5px);
+                box-shadow: 0 12px 24px rgba(255, 215, 0, 0.2);
+                border-color: #FFC800;
             }
 
             .card h2 {
-                font-family: 'Plus Jakarta Sans', sans-serif;
+                font-family: 'Oswald', sans-serif;
                 font-size: 42px;
-                font-weight: 800;
-                background: linear-gradient(135deg, #2563eb, #7c3aed);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
+                font-weight: 700;
+                color: #FFD700;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
                 margin-bottom: 12px;
             }
 
             .card p {
-                color: #64748b;
-                font-family: 'Inter', sans-serif;
+                color: #555;
+                font-family: 'Barlow Condensed', sans-serif;
                 font-size: 14px;
-                font-weight: 600;
+                font-weight: 700;
                 text-transform: uppercase;
                 letter-spacing: 1px;
             }
@@ -255,130 +273,135 @@ def dashboard():
             /* Chart Container */
             .chart-container {
                 background: white;
-                border-radius: 24px;
+                border-radius: 16px;
                 padding: 28px;
                 margin-bottom: 40px;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-                border: 1px solid rgba(0, 0, 0, 0.05);
+                border: 2px solid #FFD700;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
                 transition: 0.3s;
             }
 
             .chart-container:hover {
-                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+                box-shadow: 0 8px 24px rgba(255, 215, 0, 0.15);
+                border-color: #FFC800;
             }
 
             .chart-container h3 {
-                font-family: 'Plus Jakarta Sans', sans-serif;
-                font-size: 22px;
-                font-weight: 700;
-                margin-bottom: 24px;
-                color: #1e293b;
-                display: flex;
-                align-items: center;
-                gap: 8px;
+                font-family: 'Barlow Condensed', sans-serif;
+                font-size: 24px;
+                font-weight: 800;
+                margin-bottom: 20px;
+                color: #FFD700;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
+                letter-spacing: 1px;
             }
 
             canvas {
                 max-height: 400px;
             }
 
-            /* Table Container */
+            /* Table Container - Gaming style */
             .table-container {
                 background: white;
-                border-radius: 24px;
+                border-radius: 16px;
                 padding: 28px;
                 overflow-x: auto;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-                border: 1px solid rgba(0, 0, 0, 0.05);
+                border: 2px solid #FFD700;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
                 transition: 0.3s;
             }
 
             .table-container:hover {
-                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+                box-shadow: 0 8px 24px rgba(255, 215, 0, 0.15);
+                border-color: #FFC800;
             }
 
             .table-container h3 {
-                font-family: 'Plus Jakarta Sans', sans-serif;
-                font-size: 22px;
-                font-weight: 700;
-                margin-bottom: 24px;
-                color: #1e293b;
-                display: flex;
-                align-items: center;
-                gap: 8px;
+                font-family: 'Barlow Condensed', sans-serif;
+                font-size: 24px;
+                font-weight: 800;
+                margin-bottom: 20px;
+                color: #FFD700;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
+                letter-spacing: 1px;
             }
 
             table {
                 width: 100%;
                 border-collapse: collapse;
-                font-family: 'Inter', sans-serif;
+                font-family: 'Barlow', sans-serif;
             }
 
             th {
                 text-align: left;
                 padding: 16px 12px;
-                background: #f8fafc;
-                font-family: 'Inter', sans-serif;
-                font-weight: 700;
-                font-size: 13px;
+                background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
+                font-family: 'Barlow Condensed', sans-serif;
+                font-weight: 800;
+                font-size: 14px;
                 text-transform: uppercase;
-                letter-spacing: 0.5px;
-                color: #475569;
-                border-bottom: 2px solid #e2e8f0;
+                letter-spacing: 1px;
+                color: #FFD700;
+                border-bottom: 3px solid #FFD700;
             }
 
             td {
                 padding: 14px 12px;
-                border-bottom: 1px solid #f1f5f9;
-                color: #334155;
+                border-bottom: 1px solid #e0e0e0;
+                color: #333;
                 font-size: 14px;
                 font-weight: 500;
             }
 
             tr:hover td {
-                background: #f8fafc;
+                background: rgba(255, 215, 0, 0.08);
             }
 
             .rank-cell {
-                font-weight: 800;
-                font-family: 'Plus Jakarta Sans', sans-serif;
+                font-weight: 900;
+                font-family: 'Barlow Condensed', sans-serif;
+                font-size: 16px;
             }
 
             .rank-1 {
-                color: #f59e0b;
+                color: #FFD700;
+                text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
             }
 
             .rank-2 {
-                color: #94a3b8;
+                color: #C0C0C0;
             }
 
             .rank-3 {
-                color: #b45309;
+                color: #CD7F32;
             }
 
             .score-cell {
-                font-weight: 700;
-                color: #2563eb;
+                font-weight: 800;
+                color: #FFD700;
+                font-size: 16px;
             }
 
             .refresh-btn {
-                background: linear-gradient(135deg, #2563eb, #7c3aed);
-                border: none;
+                background: linear-gradient(135deg, #FFD700, #FFA500);
+                border: 2px solid #fff;
                 border-radius: 40px;
-                padding: 10px 24px;
-                color: white;
-                font-family: 'Inter', sans-serif;
-                font-size: 13px;
-                font-weight: 600;
+                padding: 8px 24px;
+                color: #1a1a2e;
+                font-family: 'Barlow Condensed', sans-serif;
+                font-size: 14px;
+                font-weight: 800;
+                text-transform: uppercase;
                 cursor: pointer;
                 transition: all 0.2s ease;
                 margin-left: 20px;
-                box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+                box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
             }
 
             .refresh-btn:hover {
                 transform: scale(1.02);
-                box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+                box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+                background: linear-gradient(135deg, #FFE44D, #FFB347);
             }
 
             /* Scrollbar styling */
@@ -388,17 +411,17 @@ def dashboard():
             }
 
             ::-webkit-scrollbar-track {
-                background: #f1f5f9;
+                background: #f0f0f0;
                 border-radius: 10px;
             }
 
             ::-webkit-scrollbar-thumb {
-                background: #cbd5e1;
+                background: #FFD700;
                 border-radius: 10px;
             }
 
             ::-webkit-scrollbar-thumb:hover {
-                background: #94a3b8;
+                background: #FFA500;
             }
 
             /* Responsive */
@@ -412,8 +435,8 @@ def dashboard():
                     padding: 20px;
                 }
                 .return-btn, .refresh-btn {
-                    padding: 8px 20px;
-                    font-size: 12px;
+                    padding: 6px 20px;
+                    font-size: 13px;
                 }
                 th, td {
                     padding: 10px 8px;
@@ -426,17 +449,6 @@ def dashboard():
                     padding: 20px;
                 }
             }
-
-            /* Badge styling */
-            .badge {
-                display: inline-block;
-                padding: 4px 10px;
-                background: #eef2ff;
-                color: #2563eb;
-                border-radius: 12px;
-                font-size: 12px;
-                font-weight: 600;
-            }
         </style>
     </head>
 
@@ -444,14 +456,14 @@ def dashboard():
         <div class="container">
             <div class="header">
                 <div class="title-section">
-                    <h1>🏆 Leaderboard Analytics</h1>
-                    <p>Real-time score tracking & player rankings</p>
+                    <h1>🏆 LEADERBOARD ANALYTICS</h1>
+                    <p>LootLocker | Real-time Score Tracking | Gaming Stats</p>
                 </div>
                 <div style="display: flex; gap: 12px; align-items: center;">
-                    <button class="refresh-btn" onclick="location.reload()">⟳ Refresh Data</button>
+                    <button class="refresh-btn" onclick="location.reload()">⟳ REFRESH</button>
                     <a href="{{ laravel_url }}/launcher" class="return-btn">
                         <span>←</span>
-                        <span>Return to Launcher</span>
+                        <span>RETURN TO LAUNCHER</span>
                     </a>
                 </div>
             </div>
@@ -459,11 +471,11 @@ def dashboard():
             <div class="cards">
                 <div class="card">
                     <h2>{{ total_players }}</h2>
-                    <p>Total Players</p>
+                    <p>Total Fighters</p>
                 </div>
                 <div class="card">
                     <h2>{{ highest_score }}</h2>
-                    <p>Highest Score</p>
+                    <p>Top Score</p>
                 </div>
                 <div class="card">
                     <h2>{{ top_player }}</h2>
@@ -471,25 +483,25 @@ def dashboard():
                 </div>
                 <div class="card">
                     <h2>{{ "%.0f"|format(top_10_avg) }}</h2>
-                    <p>Top 10 Average</p>
+                    <p>Top 10 Avg Score</p>
                 </div>
             </div>
 
             <div class="chart-container">
-                <h3>📊 Score Distribution</h3>
+                <h3>📊 SCORE DISTRIBUTION</h3>
                 <canvas id="leaderboardChart"></canvas>
             </div>
 
             <div class="table-container">
-                <h3>📋 Player Rankings</h3>
+                <h3>📋 PLAYER RANKINGS</h3>
                 <table>
                     <thead>
                         <tr>
-                            <th>Rank</th>
-                            <th>Player Name</th>
-                            <th>Score</th>
-                            <th>Member ID</th>
-                            <th>Public UID</th>
+                            <th>RANK</th>
+                            <th>PLAYER NAME</th>
+                            <th>SCORE</th>
+                            <th>MEMBER ID</th>
+                            <th>PUBLIC UID</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -526,10 +538,10 @@ def dashboard():
                     datasets: [{
                         label: 'Score',
                         data: playerScores,
-                        backgroundColor: 'rgba(37, 99, 235, 0.7)',
-                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(255, 215, 0, 0.7)',
+                        borderColor: '#FFD700',
                         borderWidth: 2,
-                        borderRadius: 8,
+                        borderRadius: 6,
                         barPercentage: 0.7,
                         categoryPercentage: 0.8
                     }]
@@ -540,16 +552,16 @@ def dashboard():
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#334155',
-                                font: { family: 'Inter', size: 13, weight: '600' }
+                                color: '#333',
+                                font: { family: 'Barlow Condensed', size: 14, weight: 'bold' }
                             }
                         },
                         tooltip: {
-                            backgroundColor: 'white',
-                            titleColor: '#1e293b',
-                            bodyColor: '#475569',
-                            borderColor: '#e2e8f0',
-                            borderWidth: 1,
+                            backgroundColor: 'rgba(0,0,0,0.9)',
+                            titleColor: '#FFD700',
+                            bodyColor: '#fff',
+                            borderColor: '#FFD700',
+                            borderWidth: 2,
                             callbacks: {
                                 label: function(context) {
                                     return `Score: ${context.raw.toLocaleString()}`;
@@ -560,25 +572,25 @@ def dashboard():
                     scales: {
                         x: {
                             ticks: {
-                                color: '#475569',
-                                font: { family: 'Inter', size: 11 },
+                                color: '#555',
+                                font: { family: 'Barlow', size: 11 },
                                 maxRotation: 45,
                                 minRotation: 45
                             },
-                            grid: { color: '#e2e8f0' }
+                            grid: { color: 'rgba(0,0,0,0.05)' }
                         },
                         y: {
                             ticks: {
-                                color: '#475569',
-                                font: { family: 'Inter', size: 12 }
+                                color: '#555',
+                                font: { family: 'Barlow', size: 12 }
                             },
-                            grid: { color: '#e2e8f0' },
+                            grid: { color: 'rgba(0,0,0,0.05)' },
                             beginAtZero: true,
                             title: {
                                 display: true,
                                 text: 'SCORE',
-                                color: '#64748b',
-                                font: { family: 'Inter', size: 12, weight: '600' }
+                                color: '#FFD700',
+                                font: { family: 'Barlow Condensed', size: 14, weight: 'bold' }
                             }
                         }
                     }
