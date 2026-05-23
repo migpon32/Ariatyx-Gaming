@@ -441,7 +441,7 @@ def dashboard():
         <div class="container">
             <div class="header">
                 <div class="title-section">
-                    <h1>🏆 LEADERBOARD ANALYTICS</h1>
+                    <h1>LEADERBOARD ANALYTICS</h1>
                     <p>LootLocker | Real-time Score Tracking | Gaming Stats</p>
                 </div>
                 <div style="display: flex; gap: 12px; align-items: center;">
@@ -473,12 +473,12 @@ def dashboard():
             </div>
 
             <div class="chart-container">
-                <h3>📊 SCORE DISTRIBUTION</h3>
+                <h3>SCORE DISTRIBUTION</h3>
                 <canvas id="leaderboardChart"></canvas>
             </div>
 
             <div class="table-container">
-                <h3>📋 PLAYER RANKINGS</h3>
+                <h3>PLAYER RANKINGS</h3>
                 <table>
                     <thead>
                         <tr>
