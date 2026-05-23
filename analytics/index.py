@@ -100,7 +100,6 @@ def dashboard():
 
     # Calculate additional stats
     top_10_avg = df.head(10)["Score"].mean() if len(df) >= 10 else df["Score"].mean()
-    median_score = df["Score"].median()
 
     html = """
     <!DOCTYPE html>
@@ -120,14 +119,14 @@ def dashboard():
             }
 
             body {
-                background: linear-gradient(135deg, #f0f4f8 0%, #e8edf5 100%);
+                background: linear-gradient(135deg, #f5f7fa 0%, #e9eef3 100%);
                 font-family: 'Barlow', sans-serif;
-                color: #1a1a2e;
+                color: #1a1f2e;
                 min-height: 100vh;
                 overflow-x: auto;
             }
 
-            /* Subtle gaming pattern */
+            /* Subtle gaming grid pattern */
             body::before {
                 content: '';
                 position: fixed;
@@ -135,9 +134,10 @@ def dashboard():
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48cGF0aCBkPSJNMzAgMTBhMjAgMjAgMCAwIDEgMCA0MCAyMCAyMCAwIDAgMSAwLTQweiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZkYzAwIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1vcGFjaXR5PSIwLjA1Ii8+PC9zdmc+');
-                background-repeat: repeat;
-                opacity: 0.4;
+                background-image: 
+                    linear-gradient(rgba(255, 215, 0, 0.08) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255, 215, 0, 0.08) 1px, transparent 1px);
+                background-size: 30px 30px;
                 pointer-events: none;
                 z-index: 0;
             }
@@ -150,7 +150,7 @@ def dashboard():
                 z-index: 1;
             }
 
-            /* Header with gaming style */
+            /* Header with subtle gold border */
             .header {
                 display: flex;
                 justify-content: space-between;
@@ -159,11 +159,11 @@ def dashboard():
                 gap: 20px;
                 margin-bottom: 40px;
                 padding: 20px 30px;
-                background: rgba(255, 255, 255, 0.9);
-                backdrop-filter: blur(20px);
-                border-radius: 16px;
-                border: 2px solid #FFD700;
-                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                border-radius: 20px;
+                border: 1px solid rgba(255, 215, 0, 0.3);
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
             }
 
             .title-section h1 {
@@ -171,47 +171,46 @@ def dashboard():
                 font-size: clamp(32px, 5vw, 48px);
                 font-weight: 900;
                 text-transform: uppercase;
-                background: linear-gradient(135deg, #1a1a2e 0%, #FFD700 50%, #1a1a2e 100%);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                letter-spacing: -1px;
+                color: #1a1f2e;
+                letter-spacing: -0.5px;
+                text-shadow: 1px 1px 0 rgba(255, 215, 0, 0.3);
             }
 
             .title-section p {
-                color: #666;
+                color: #5a6e8a;
                 font-family: 'Barlow Condensed', sans-serif;
                 font-size: 16px;
-                font-weight: 600;
+                font-weight: 500;
             }
 
-            /* Return Button - Gaming style */
+            /* Return Button */
             .return-btn {
                 display: inline-flex;
                 align-items: center;
                 gap: 12px;
-                background: linear-gradient(135deg, #FFD700, #FFA500);
-                border: 2px solid #fff;
+                background: #1a1f2e;
+                border: 2px solid #FFD700;
                 border-radius: 40px;
                 padding: 10px 28px;
-                color: #1a1a2e;
+                color: #FFD700;
                 font-family: 'Barlow Condensed', sans-serif;
                 font-size: 16px;
-                font-weight: 800;
+                font-weight: 700;
                 text-transform: uppercase;
                 text-decoration: none;
-                letter-spacing: 1.5px;
+                letter-spacing: 1px;
                 cursor: pointer;
                 transition: all 0.25s ease;
-                box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
             }
 
             .return-btn:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 8px 20px rgba(255, 215, 0, 0.5);
-                background: linear-gradient(135deg, #FFE44D, #FFB347);
+                transform: translateY(-2px);
+                background: #FFD700;
+                color: #1a1f2e;
+                box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
             }
 
-            /* Stats Cards - Gaming style */
+            /* Stats Cards */
             .cards {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -221,51 +220,34 @@ def dashboard():
 
             .card {
                 background: white;
-                border-radius: 16px;
+                border-radius: 20px;
                 padding: 28px 24px;
                 text-align: center;
                 transition: all 0.3s ease;
-                border: 2px solid #FFD700;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-                position: relative;
-                overflow: hidden;
-            }
-
-            .card::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: -100%;
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.1), transparent);
-                transition: left 0.5s ease;
-            }
-
-            .card:hover::before {
-                left: 100%;
+                border: 1px solid rgba(255, 215, 0, 0.3);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
             }
 
             .card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 12px 24px rgba(255, 215, 0, 0.2);
-                border-color: #FFC800;
+                transform: translateY(-4px);
+                border-color: #FFD700;
+                box-shadow: 0 8px 24px rgba(255, 215, 0, 0.12);
             }
 
             .card h2 {
                 font-family: 'Oswald', sans-serif;
                 font-size: 42px;
                 font-weight: 700;
-                color: #FFD700;
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+                color: #1a1f2e;
                 margin-bottom: 12px;
+                text-shadow: 0.5px 0.5px 0 #FFD700;
             }
 
             .card p {
-                color: #555;
+                color: #5a6e8a;
                 font-family: 'Barlow Condensed', sans-serif;
                 font-size: 14px;
-                font-weight: 700;
+                font-weight: 600;
                 text-transform: uppercase;
                 letter-spacing: 1px;
             }
@@ -273,17 +255,17 @@ def dashboard():
             /* Chart Container */
             .chart-container {
                 background: white;
-                border-radius: 16px;
+                border-radius: 20px;
                 padding: 28px;
                 margin-bottom: 40px;
-                border: 2px solid #FFD700;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+                border: 1px solid rgba(255, 215, 0, 0.3);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
                 transition: 0.3s;
             }
 
             .chart-container:hover {
-                box-shadow: 0 8px 24px rgba(255, 215, 0, 0.15);
-                border-color: #FFC800;
+                border-color: #FFD700;
+                box-shadow: 0 8px 24px rgba(255, 215, 0, 0.12);
             }
 
             .chart-container h3 {
@@ -291,29 +273,29 @@ def dashboard():
                 font-size: 24px;
                 font-weight: 800;
                 margin-bottom: 20px;
-                color: #FFD700;
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
-                letter-spacing: 1px;
+                color: #1a1f2e;
+                letter-spacing: 0.5px;
+                text-shadow: 0.5px 0.5px 0 rgba(255, 215, 0, 0.3);
             }
 
             canvas {
                 max-height: 400px;
             }
 
-            /* Table Container - Gaming style */
+            /* Table Container */
             .table-container {
                 background: white;
-                border-radius: 16px;
+                border-radius: 20px;
                 padding: 28px;
                 overflow-x: auto;
-                border: 2px solid #FFD700;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+                border: 1px solid rgba(255, 215, 0, 0.3);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
                 transition: 0.3s;
             }
 
             .table-container:hover {
-                box-shadow: 0 8px 24px rgba(255, 215, 0, 0.15);
-                border-color: #FFC800;
+                border-color: #FFD700;
+                box-shadow: 0 8px 24px rgba(255, 215, 0, 0.12);
             }
 
             .table-container h3 {
@@ -321,9 +303,9 @@ def dashboard():
                 font-size: 24px;
                 font-weight: 800;
                 margin-bottom: 20px;
-                color: #FFD700;
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
-                letter-spacing: 1px;
+                color: #1a1f2e;
+                letter-spacing: 0.5px;
+                text-shadow: 0.5px 0.5px 0 rgba(255, 215, 0, 0.3);
             }
 
             table {
@@ -335,26 +317,26 @@ def dashboard():
             th {
                 text-align: left;
                 padding: 16px 12px;
-                background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
+                background: #f8fafc;
                 font-family: 'Barlow Condensed', sans-serif;
                 font-weight: 800;
-                font-size: 14px;
+                font-size: 13px;
                 text-transform: uppercase;
                 letter-spacing: 1px;
-                color: #FFD700;
-                border-bottom: 3px solid #FFD700;
+                color: #1a1f2e;
+                border-bottom: 2px solid #FFD700;
             }
 
             td {
                 padding: 14px 12px;
-                border-bottom: 1px solid #e0e0e0;
-                color: #333;
+                border-bottom: 1px solid #e2e8f0;
+                color: #334155;
                 font-size: 14px;
                 font-weight: 500;
             }
 
             tr:hover td {
-                background: rgba(255, 215, 0, 0.08);
+                background: rgba(255, 215, 0, 0.05);
             }
 
             .rank-cell {
@@ -364,44 +346,47 @@ def dashboard():
             }
 
             .rank-1 {
-                color: #FFD700;
-                text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+                color: #1a1f2e;
+                text-shadow: 0.5px 0.5px 0 #FFD700;
+                position: relative;
             }
 
             .rank-2 {
-                color: #C0C0C0;
+                color: #475569;
+                text-shadow: 0.5px 0.5px 0 #cbd5e1;
             }
 
             .rank-3 {
-                color: #CD7F32;
+                color: #78350f;
+                text-shadow: 0.5px 0.5px 0 #fbbf24;
             }
 
             .score-cell {
                 font-weight: 800;
-                color: #FFD700;
+                color: #1a1f2e;
+                text-shadow: 0.5px 0.5px 0 #FFD700;
                 font-size: 16px;
             }
 
             .refresh-btn {
-                background: linear-gradient(135deg, #FFD700, #FFA500);
-                border: 2px solid #fff;
+                background: #1a1f2e;
+                border: 2px solid #FFD700;
                 border-radius: 40px;
                 padding: 8px 24px;
-                color: #1a1a2e;
+                color: #FFD700;
                 font-family: 'Barlow Condensed', sans-serif;
                 font-size: 14px;
-                font-weight: 800;
+                font-weight: 700;
                 text-transform: uppercase;
                 cursor: pointer;
                 transition: all 0.2s ease;
                 margin-left: 20px;
-                box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
             }
 
             .refresh-btn:hover {
+                background: #FFD700;
+                color: #1a1f2e;
                 transform: scale(1.02);
-                box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
-                background: linear-gradient(135deg, #FFE44D, #FFB347);
             }
 
             /* Scrollbar styling */
@@ -411,17 +396,17 @@ def dashboard():
             }
 
             ::-webkit-scrollbar-track {
-                background: #f0f0f0;
+                background: #f1f5f9;
                 border-radius: 10px;
             }
 
             ::-webkit-scrollbar-thumb {
-                background: #FFD700;
+                background: #cbd5e1;
                 border-radius: 10px;
             }
 
             ::-webkit-scrollbar-thumb:hover {
-                background: #FFA500;
+                background: #FFD700;
             }
 
             /* Responsive */
@@ -436,11 +421,11 @@ def dashboard():
                 }
                 .return-btn, .refresh-btn {
                     padding: 6px 20px;
-                    font-size: 13px;
+                    font-size: 12px;
                 }
                 th, td {
                     padding: 10px 8px;
-                    font-size: 12px;
+                    font-size: 11px;
                 }
                 .card h2 {
                     font-size: 32px;
@@ -538,7 +523,7 @@ def dashboard():
                     datasets: [{
                         label: 'Score',
                         data: playerScores,
-                        backgroundColor: 'rgba(255, 215, 0, 0.7)',
+                        backgroundColor: 'rgba(26, 31, 46, 0.7)',
                         borderColor: '#FFD700',
                         borderWidth: 2,
                         borderRadius: 6,
@@ -552,16 +537,16 @@ def dashboard():
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#333',
-                                font: { family: 'Barlow Condensed', size: 14, weight: 'bold' }
+                                color: '#1a1f2e',
+                                font: { family: 'Barlow Condensed', size: 13, weight: 'bold' }
                             }
                         },
                         tooltip: {
-                            backgroundColor: 'rgba(0,0,0,0.9)',
+                            backgroundColor: '#1a1f2e',
                             titleColor: '#FFD700',
                             bodyColor: '#fff',
                             borderColor: '#FFD700',
-                            borderWidth: 2,
+                            borderWidth: 1,
                             callbacks: {
                                 label: function(context) {
                                     return `Score: ${context.raw.toLocaleString()}`;
@@ -572,7 +557,7 @@ def dashboard():
                     scales: {
                         x: {
                             ticks: {
-                                color: '#555',
+                                color: '#475569',
                                 font: { family: 'Barlow', size: 11 },
                                 maxRotation: 45,
                                 minRotation: 45
@@ -581,7 +566,7 @@ def dashboard():
                         },
                         y: {
                             ticks: {
-                                color: '#555',
+                                color: '#475569',
                                 font: { family: 'Barlow', size: 12 }
                             },
                             grid: { color: 'rgba(0,0,0,0.05)' },
@@ -589,8 +574,8 @@ def dashboard():
                             title: {
                                 display: true,
                                 text: 'SCORE',
-                                color: '#FFD700',
-                                font: { family: 'Barlow Condensed', size: 14, weight: 'bold' }
+                                color: '#1a1f2e',
+                                font: { family: 'Barlow Condensed', size: 13, weight: 'bold' }
                             }
                         }
                     }
