@@ -8,6 +8,9 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\TwoFactorChallengeController;
+use App\Http\Controllers\Auth\TwoFactorDisableController;
+use App\Http\Controllers\Auth\TwoFactorSetupController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
@@ -35,7 +38,39 @@ Route::middleware('guest')->group(function () {
         ->name('password.store');
 });
 
+Route::middleware('guest')->group(function () {
+    Route::get('two-factor/challenge', [TwoFactorChallengeController::class, 'show'])
+        ->name('two-factor.challenge');
+
+    Route::post('two-factor/challenge', [TwoFactorChallengeController::class, 'verify'])
+        ->middleware('throttle:10,1')
+        ->name('two-factor.verify');
+});
+
 Route::middleware('auth')->group(function () {
+    Route::get('two-factor/setup', [TwoFactorSetupController::class, 'show'])
+        ->name('two-factor.setup');
+
+    Route::post('two-factor/setup', [TwoFactorSetupController::class, 'confirm'])
+        ->middleware('throttle:10,1')
+        ->name('two-factor.confirm');
+
+    Route::get('two-factor/recovery-codes', [TwoFactorSetupController::class, 'recoveryCodes'])
+        ->middleware(['2fa.enabled', '2fa.verified'])
+        ->name('two-factor.recovery-codes');
+
+    Route::post('two-factor/recovery-codes', [TwoFactorSetupController::class, 'regenerateRecoveryCodes'])
+        ->middleware(['2fa.enabled', '2fa.verified', 'password.confirm'])
+        ->name('two-factor.recovery-codes.regenerate');
+
+    Route::get('two-factor/disable', [TwoFactorDisableController::class, 'show'])
+        ->middleware(['2fa.enabled', '2fa.verified', 'password.confirm'])
+        ->name('two-factor.disable');
+
+    Route::delete('two-factor/disable', [TwoFactorDisableController::class, 'destroy'])
+        ->middleware(['2fa.enabled', '2fa.verified', 'password.confirm'])
+        ->name('two-factor.destroy');
+
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');
 

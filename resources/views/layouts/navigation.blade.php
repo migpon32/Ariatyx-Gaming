@@ -39,6 +39,10 @@
                                 {{ __('Profile') }}
                             </x-dropdown-link>
 
+                            <x-dropdown-link :href="route('two-factor.recovery-codes')" class="uppercase text-[9px] font-bold tracking-widest text-gray-300 hover:bg-white/5 hover:text-white">
+                                {{ __('2FA Security') }}
+                            </x-dropdown-link>
+
                             {{-- LOGOUT --}}
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
@@ -89,6 +93,10 @@
                 {{-- PROFILE (MIDDLE) --}}
                 <x-responsive-nav-link :href="route('profile.edit')" class="text-white uppercase text-[11px] font-bold tracking-[0.2em] hover:bg-white/10 rounded-md px-3 py-2 transition flex items-center w-full">
                     {{ __('Profile') }}
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('two-factor.recovery-codes')" class="text-white uppercase text-[11px] font-bold tracking-[0.2em] hover:bg-white/10 rounded-md px-3 py-2 transition flex items-center w-full">
+                    {{ __('2FA Security') }}
                 </x-responsive-nav-link>
 
                 {{-- LOGOUT --}}

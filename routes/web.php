@@ -19,7 +19,7 @@ Route::get('/leaderboard', function () {
 
 Route::get('/dashboard', function () {
     return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'verified', '2fa.enabled', '2fa.verified'])->name('dashboard');
 
 Route::get('/game-play', function () {
     return response()
@@ -30,14 +30,14 @@ Route::get('/game-play', function () {
         ->header('Surrogate-Control', 'no-store');
 })->name('game.play');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', '2fa.enabled', '2fa.verified'])->group(function () {
     Route::post('/firebase/token', [FirebaseTokenController::class, 'store'])->name('firebase.token.store');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', '2fa.enabled', '2fa.verified'])->group(function () {
     Route::get('/launcher', function () {
         return view('launcher');
     })->name('launcher');

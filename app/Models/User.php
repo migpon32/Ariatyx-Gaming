@@ -25,6 +25,10 @@ class User extends Authenticatable
         'security_answer_2',
         'security_question_3',
         'security_answer_3',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'two_factor_enabled',
+        'two_factor_confirmed_at',
     ];
 
     /**
@@ -36,6 +40,8 @@ class User extends Authenticatable
         'security_answer_1',
         'security_answer_2',
         'security_answer_3',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     /**
@@ -47,6 +53,10 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'fcm_token_updated_at' => 'datetime',
             'password' => 'hashed',
+            'two_factor_secret' => 'encrypted',
+            'two_factor_recovery_codes' => 'encrypted:array',
+            'two_factor_enabled' => 'boolean',
+            'two_factor_confirmed_at' => 'datetime',
         ];
     }
 }
