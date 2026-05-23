@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Rules\StrongPasswordPattern;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -48,7 +49,7 @@ class RegisteredUserController extends Controller
         $request->validate([
             'username' => ['required', 'string', 'max:255', 'unique:users,username'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', Rules\Password::defaults(), new StrongPasswordPattern()],
             'security_question_1' => ['required', 'string', 'max:255'],
             'security_answer_1' => ['required', 'string', 'max:255', $uppercaseAnswer],
             'security_question_2' => ['required', 'string', 'max:255'],

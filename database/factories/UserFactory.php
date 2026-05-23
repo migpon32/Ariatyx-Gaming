@@ -30,7 +30,7 @@ class UserFactory extends Factory
             'username' => $username,
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
+            'password' => static::$password ??= Hash::make('Str0ng!Factory2026'),
             'security_question_1' => 'What city were you born in?',
             'security_answer_1' => Hash::make('MANILA'),
             'security_question_2' => 'What is your favorite game?',

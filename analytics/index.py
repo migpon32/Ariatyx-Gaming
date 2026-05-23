@@ -110,7 +110,7 @@ def dashboard():
         <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
         <title>BulletDrop - Leaderboard Analytics</title>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&family=Oswald:wght@700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
         
         <style>
             * {
@@ -120,14 +120,14 @@ def dashboard():
             }
 
             body {
-                background: #000000;
-                font-family: 'Barlow', sans-serif;
-                color: #e8e8f0;
+                background: linear-gradient(135deg, #f5f7fa 0%, #eef2f7 100%);
+                font-family: 'Inter', 'Plus Jakarta Sans', sans-serif;
+                color: #1a1f2e;
                 min-height: 100vh;
                 overflow-x: auto;
             }
 
-            /* Scanlines effect */
+            /* Soft background pattern */
             body::before {
                 content: '';
                 position: fixed;
@@ -135,27 +135,11 @@ def dashboard():
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
-                pointer-events: none;
-                z-index: 100;
-            }
-
-            /* Animated background gradient */
-            .bg-gradient {
-                position: fixed;
-                inset: 0;
-                background: radial-gradient(ellipse at 30% 40%, rgba(255,215,0,0.08) 0%, rgba(0,0,0,0.95) 70%);
-                z-index: -2;
-            }
-
-            .bg-noise {
-                position: fixed;
-                inset: 0;
-                background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJmIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjciIG51bU9jdGF2ZXM9IjMiLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWx0ZXI9InVybCgjZikiIG9wYWNpdHk9IjAuMDYiLz48L3N2Zz4=');
-                background-repeat: repeat;
+                background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+                background-size: 40px 40px;
                 opacity: 0.3;
                 pointer-events: none;
-                z-index: -1;
+                z-index: 0;
             }
 
             .container {
@@ -174,254 +158,247 @@ def dashboard():
                 flex-wrap: wrap;
                 gap: 20px;
                 margin-bottom: 40px;
-                padding-bottom: 20px;
-                border-bottom: 1px solid rgba(255,215,0,0.3);
+                padding: 20px 30px;
+                background: rgba(255, 255, 255, 0.8);
+                backdrop-filter: blur(20px);
+                border-radius: 24px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.9);
             }
 
             .title-section h1 {
-                font-family: 'Barlow Condensed', sans-serif;
+                font-family: 'Plus Jakarta Sans', sans-serif;
                 font-size: clamp(32px, 5vw, 48px);
-                font-weight: 900;
-                text-transform: uppercase;
-                background: linear-gradient(135deg, #fff 0%, #FFD700 40%, #FF4DA6 100%);
+                font-weight: 800;
+                background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
-                letter-spacing: -1px;
+                letter-spacing: -0.5px;
             }
 
             .title-section p {
-                color: rgba(255,255,255,0.6);
-                font-family: 'Barlow Condensed', sans-serif;
-                font-size: 16px;
-                letter-spacing: 1px;
+                color: #64748b;
+                font-family: 'Inter', sans-serif;
+                font-size: 15px;
+                font-weight: 500;
+                margin-top: 8px;
             }
 
-            /* Return Button - Same style as launcher */
+            /* Return Button */
             .return-btn {
                 display: inline-flex;
                 align-items: center;
                 gap: 12px;
-                background: rgba(255,255,255,0.05);
-                border: 1px solid rgba(255,215,0,0.4);
+                background: linear-gradient(135deg, #2563eb, #7c3aed);
+                border: none;
                 border-radius: 40px;
-                padding: 10px 28px;
-                color: #FFD700;
-                font-family: 'Barlow Condensed', sans-serif;
-                font-size: 16px;
-                font-weight: 700;
-                text-transform: uppercase;
+                padding: 12px 32px;
+                color: white;
+                font-family: 'Inter', sans-serif;
+                font-size: 14px;
+                font-weight: 600;
                 text-decoration: none;
-                letter-spacing: 1.5px;
+                letter-spacing: 0.5px;
                 cursor: pointer;
-                transition: all 0.25s ease;
-                backdrop-filter: blur(8px);
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
             }
 
             .return-btn:hover {
-                background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,77,166,0.1));
-                border-color: #FFD700;
-                transform: translateX(-3px);
-                box-shadow: 0 0 20px rgba(255,215,0,0.3);
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
             }
 
-            /* Stats Cards - Glowing effect */
+            /* Stats Cards */
             .cards {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 20px;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 24px;
                 margin-bottom: 40px;
             }
 
             .card {
-                background: rgba(10,10,15,0.7);
-                backdrop-filter: blur(10px);
-                border: 1px solid rgba(255,215,0,0.2);
-                border-radius: 16px;
-                padding: 24px 20px;
+                background: white;
+                border-radius: 24px;
+                padding: 28px 24px;
                 text-align: center;
                 transition: all 0.3s ease;
-                position: relative;
-                overflow: hidden;
-            }
-
-            .card::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: -100%;
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(90deg, transparent, rgba(255,215,0,0.1), transparent);
-                transition: left 0.5s ease;
-            }
-
-            .card:hover::before {
-                left: 100%;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+                border: 1px solid rgba(0, 0, 0, 0.05);
             }
 
             .card:hover {
-                border-color: rgba(255,215,0,0.5);
-                transform: translateY(-3px);
-                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+                transform: translateY(-4px);
+                box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+                border-color: rgba(37, 99, 235, 0.2);
             }
 
             .card h2 {
-                font-family: 'Oswald', sans-serif;
-                font-size: 36px;
-                font-weight: 700;
-                background: linear-gradient(135deg, #FFD700, #FF4DA6);
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                font-size: 42px;
+                font-weight: 800;
+                background: linear-gradient(135deg, #2563eb, #7c3aed);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
-                margin-bottom: 8px;
+                margin-bottom: 12px;
             }
 
             .card p {
-                color: rgba(255,255,255,0.7);
-                font-family: 'Barlow Condensed', sans-serif;
+                color: #64748b;
+                font-family: 'Inter', sans-serif;
                 font-size: 14px;
+                font-weight: 600;
                 text-transform: uppercase;
                 letter-spacing: 1px;
             }
 
             /* Chart Container */
             .chart-container {
-                background: rgba(10,10,15,0.7);
-                backdrop-filter: blur(10px);
-                border: 1px solid rgba(255,215,0,0.2);
-                border-radius: 20px;
-                padding: 25px;
+                background: white;
+                border-radius: 24px;
+                padding: 28px;
                 margin-bottom: 40px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+                border: 1px solid rgba(0, 0, 0, 0.05);
                 transition: 0.3s;
             }
 
             .chart-container:hover {
-                border-color: rgba(255,215,0,0.4);
-                box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
             }
 
             .chart-container h3 {
-                font-family: 'Barlow Condensed', sans-serif;
-                font-size: 24px;
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                font-size: 22px;
                 font-weight: 700;
-                margin-bottom: 20px;
-                color: #FFD700;
-                letter-spacing: 1px;
+                margin-bottom: 24px;
+                color: #1e293b;
+                display: flex;
+                align-items: center;
+                gap: 8px;
             }
 
             canvas {
                 max-height: 400px;
             }
 
-            /* Table Container - Cyberpunk style */
+            /* Table Container */
             .table-container {
-                background: rgba(10,10,15,0.7);
-                backdrop-filter: blur(10px);
-                border: 1px solid rgba(255,215,0,0.2);
-                border-radius: 20px;
-                padding: 25px;
+                background: white;
+                border-radius: 24px;
+                padding: 28px;
                 overflow-x: auto;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+                border: 1px solid rgba(0, 0, 0, 0.05);
                 transition: 0.3s;
             }
 
             .table-container:hover {
-                border-color: rgba(255,215,0,0.4);
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
             }
 
             .table-container h3 {
-                font-family: 'Barlow Condensed', sans-serif;
-                font-size: 24px;
+                font-family: 'Plus Jakarta Sans', sans-serif;
+                font-size: 22px;
                 font-weight: 700;
-                margin-bottom: 20px;
-                color: #FFD700;
-                letter-spacing: 1px;
+                margin-bottom: 24px;
+                color: #1e293b;
+                display: flex;
+                align-items: center;
+                gap: 8px;
             }
 
             table {
                 width: 100%;
                 border-collapse: collapse;
-                font-family: 'Barlow', sans-serif;
+                font-family: 'Inter', sans-serif;
             }
 
             th {
                 text-align: left;
-                padding: 14px 12px;
-                background: rgba(255,215,0,0.1);
-                font-family: 'Barlow Condensed', sans-serif;
+                padding: 16px 12px;
+                background: #f8fafc;
+                font-family: 'Inter', sans-serif;
                 font-weight: 700;
-                font-size: 14px;
+                font-size: 13px;
                 text-transform: uppercase;
-                letter-spacing: 1px;
-                color: #FFD700;
-                border-bottom: 2px solid rgba(255,215,0,0.3);
+                letter-spacing: 0.5px;
+                color: #475569;
+                border-bottom: 2px solid #e2e8f0;
             }
 
             td {
-                padding: 12px;
-                border-bottom: 1px solid rgba(255,255,255,0.08);
-                color: #e8e8f0;
+                padding: 14px 12px;
+                border-bottom: 1px solid #f1f5f9;
+                color: #334155;
                 font-size: 14px;
+                font-weight: 500;
             }
 
             tr:hover td {
-                background: rgba(255,215,0,0.05);
+                background: #f8fafc;
             }
 
             .rank-cell {
                 font-weight: 800;
-                font-family: 'Barlow Condensed', sans-serif;
+                font-family: 'Plus Jakarta Sans', sans-serif;
             }
 
             .rank-1 {
-                color: #FFD700;
-                text-shadow: 0 0 10px rgba(255,215,0,0.5);
+                color: #f59e0b;
             }
 
             .rank-2 {
-                color: #C0C0C0;
+                color: #94a3b8;
             }
 
             .rank-3 {
-                color: #CD7F32;
+                color: #b45309;
             }
 
             .score-cell {
                 font-weight: 700;
-                color: #FFD700;
+                color: #2563eb;
             }
 
             .refresh-btn {
-                background: rgba(255,215,0,0.15);
-                border: 1px solid rgba(255,215,0,0.4);
-                border-radius: 30px;
-                padding: 8px 24px;
-                color: #FFD700;
-                font-family: 'Barlow Condensed', sans-serif;
-                font-size: 14px;
-                font-weight: 700;
-                text-transform: uppercase;
+                background: linear-gradient(135deg, #2563eb, #7c3aed);
+                border: none;
+                border-radius: 40px;
+                padding: 10px 24px;
+                color: white;
+                font-family: 'Inter', sans-serif;
+                font-size: 13px;
+                font-weight: 600;
                 cursor: pointer;
                 transition: all 0.2s ease;
                 margin-left: 20px;
+                box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
             }
 
             .refresh-btn:hover {
-                background: rgba(255,215,0,0.3);
                 transform: scale(1.02);
+                box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
             }
 
             /* Scrollbar styling */
             ::-webkit-scrollbar {
-                width: 8px;
-                height: 8px;
+                width: 10px;
+                height: 10px;
             }
 
             ::-webkit-scrollbar-track {
-                background: #111;
+                background: #f1f5f9;
+                border-radius: 10px;
             }
 
             ::-webkit-scrollbar-thumb {
-                background: #FFD700;
-                border-radius: 4px;
+                background: #cbd5e1;
+                border-radius: 10px;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #94a3b8;
             }
 
             /* Responsive */
@@ -432,37 +409,49 @@ def dashboard():
                 .header {
                     flex-direction: column;
                     align-items: flex-start;
+                    padding: 20px;
                 }
-                .return-btn {
-                    padding: 6px 20px;
-                    font-size: 13px;
+                .return-btn, .refresh-btn {
+                    padding: 8px 20px;
+                    font-size: 12px;
                 }
                 th, td {
-                    padding: 8px;
-                    font-size: 11px;
+                    padding: 10px 8px;
+                    font-size: 12px;
                 }
                 .card h2 {
-                    font-size: 28px;
+                    font-size: 32px;
                 }
+                .card {
+                    padding: 20px;
+                }
+            }
+
+            /* Badge styling */
+            .badge {
+                display: inline-block;
+                padding: 4px 10px;
+                background: #eef2ff;
+                color: #2563eb;
+                border-radius: 12px;
+                font-size: 12px;
+                font-weight: 600;
             }
         </style>
     </head>
 
     <body>
-        <div class="bg-gradient"></div>
-        <div class="bg-noise"></div>
-
         <div class="container">
             <div class="header">
                 <div class="title-section">
-                    <h1>🏆 LEADERBOARD ANALYTICS</h1>
-                    <p>LootLocker | Real-time Score Tracking</p>
+                    <h1>🏆 Leaderboard Analytics</h1>
+                    <p>Real-time score tracking & player rankings</p>
                 </div>
                 <div style="display: flex; gap: 12px; align-items: center;">
-                    <button class="refresh-btn" onclick="location.reload()">⟳ REFRESH</button>
+                    <button class="refresh-btn" onclick="location.reload()">⟳ Refresh Data</button>
                     <a href="{{ laravel_url }}/launcher" class="return-btn">
                         <span>←</span>
-                        <span>RETURN TO LAUNCHER</span>
+                        <span>Return to Launcher</span>
                     </a>
                 </div>
             </div>
@@ -470,11 +459,11 @@ def dashboard():
             <div class="cards">
                 <div class="card">
                     <h2>{{ total_players }}</h2>
-                    <p>Total Fighters</p>
+                    <p>Total Players</p>
                 </div>
                 <div class="card">
                     <h2>{{ highest_score }}</h2>
-                    <p>Top Score</p>
+                    <p>Highest Score</p>
                 </div>
                 <div class="card">
                     <h2>{{ top_player }}</h2>
@@ -482,25 +471,25 @@ def dashboard():
                 </div>
                 <div class="card">
                     <h2>{{ "%.0f"|format(top_10_avg) }}</h2>
-                    <p>Top 10 Avg Score</p>
+                    <p>Top 10 Average</p>
                 </div>
             </div>
 
             <div class="chart-container">
-                <h3>📊 SCORE DISTRIBUTION</h3>
+                <h3>📊 Score Distribution</h3>
                 <canvas id="leaderboardChart"></canvas>
             </div>
 
             <div class="table-container">
-                <h3>📋 PLAYER RANKINGS</h3>
+                <h3>📋 Player Rankings</h3>
                 <table>
                     <thead>
                         <tr>
-                            <th>RANK</th>
-                            <th>PLAYER NAME</th>
-                            <th>SCORE</th>
-                            <th>MEMBER ID</th>
-                            <th>PUBLIC UID</th>
+                            <th>Rank</th>
+                            <th>Player Name</th>
+                            <th>Score</th>
+                            <th>Member ID</th>
+                            <th>Public UID</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -514,7 +503,7 @@ def dashboard():
                                 #{{ player["Rank"] }}
                             </td>
                             <td><strong>{{ player["Player Name"] }}</strong></td>
-                            <td class="score-cell">{{ player["Score"] }}</td>
+                            <td class="score-cell">{{ "{:,.0f}".format(player["Score"]) }}</td>
                             <td>{{ player["Member ID"] }}</td>
                             <td>{{ player["Public UID"] }}</td>
                         </tr>
@@ -537,10 +526,10 @@ def dashboard():
                     datasets: [{
                         label: 'Score',
                         data: playerScores,
-                        backgroundColor: 'rgba(255, 215, 0, 0.7)',
-                        borderColor: '#FFD700',
+                        backgroundColor: 'rgba(37, 99, 235, 0.7)',
+                        borderColor: '#2563eb',
                         borderWidth: 2,
-                        borderRadius: 6,
+                        borderRadius: 8,
                         barPercentage: 0.7,
                         categoryPercentage: 0.8
                     }]
@@ -551,15 +540,15 @@ def dashboard():
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#e8e8f0',
-                                font: { family: 'Barlow Condensed', size: 14 }
+                                color: '#334155',
+                                font: { family: 'Inter', size: 13, weight: '600' }
                             }
                         },
                         tooltip: {
-                            backgroundColor: 'rgba(0,0,0,0.9)',
-                            titleColor: '#FFD700',
-                            bodyColor: '#e8e8f0',
-                            borderColor: '#FFD700',
+                            backgroundColor: 'white',
+                            titleColor: '#1e293b',
+                            bodyColor: '#475569',
+                            borderColor: '#e2e8f0',
                             borderWidth: 1,
                             callbacks: {
                                 label: function(context) {
@@ -571,25 +560,25 @@ def dashboard():
                     scales: {
                         x: {
                             ticks: {
-                                color: '#e8e8f0',
-                                font: { family: 'Barlow', size: 11 },
+                                color: '#475569',
+                                font: { family: 'Inter', size: 11 },
                                 maxRotation: 45,
                                 minRotation: 45
                             },
-                            grid: { color: 'rgba(255,255,255,0.05)' }
+                            grid: { color: '#e2e8f0' }
                         },
                         y: {
                             ticks: {
-                                color: '#e8e8f0',
-                                font: { family: 'Barlow', size: 12 }
+                                color: '#475569',
+                                font: { family: 'Inter', size: 12 }
                             },
-                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            grid: { color: '#e2e8f0' },
                             beginAtZero: true,
                             title: {
                                 display: true,
                                 text: 'SCORE',
-                                color: '#FFD700',
-                                font: { family: 'Barlow Condensed', size: 14, weight: 'bold' }
+                                color: '#64748b',
+                                font: { family: 'Inter', size: 12, weight: '600' }
                             }
                         }
                     }
@@ -606,7 +595,7 @@ def dashboard():
         player_names=json.dumps(df["Player Name"].tolist()),
         player_scores=json.dumps(df["Score"].tolist()),
         total_players=len(df),
-        highest_score=int(df["Score"].max()),
+        highest_score=f"{int(df['Score'].max()):,}",
         top_player=df.iloc[0]["Player Name"],
         top_10_avg=top_10_avg,
         laravel_url=LARAVEL_URL,

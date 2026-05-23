@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Rules\StrongPasswordPattern;
 use App\Services\TwoFactorAuthenticationService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
@@ -26,7 +27,7 @@ class AuthController extends Controller
         $validated = $request->validate([
             'username' => ['required', 'string', 'max:255', 'unique:users,username'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', Rules\Password::defaults(), new StrongPasswordPattern()],
             'device_name' => ['nullable', 'string', 'max:255'],
             'security_question_1' => ['required', 'string', 'max:255'],
             'security_answer_1' => ['required', 'string', 'max:255', $uppercaseAnswer],

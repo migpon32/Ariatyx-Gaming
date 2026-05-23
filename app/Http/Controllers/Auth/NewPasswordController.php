@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Rules\StrongPasswordPattern;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -59,7 +60,7 @@ class NewPasswordController extends Controller
             'security_answer_1' => ['required', 'string', 'max:255', $uppercaseAnswer],
             'security_answer_2' => ['required', 'string', 'max:255', $uppercaseAnswer],
             'security_answer_3' => ['required', 'string', 'max:255', $uppercaseAnswer],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', Rules\Password::defaults(), new StrongPasswordPattern()],
         ]);
 
         $user = $this->passwordResetUser($request);
